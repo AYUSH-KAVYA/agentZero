@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #060911;
+    color: #e5e7eb;
+    overflow: hidden;
+    -webkit-app-region: no-drag;
+    user-select: none;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #111827;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+}
+
+@layer components {
+  .cyber-card {
+    @apply bg-cyber-card border border-cyber-border rounded-lg p-4;
+  }
+
+  .cyber-btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200;
+  }
+
+  .cyber-btn-primary {
+    @apply cyber-btn bg-cyber-accent text-cyber-dark hover:bg-green-400 active:scale-95;
+  }
+
+  .cyber-btn-danger {
+    @apply cyber-btn bg-cyber-danger text-white hover:bg-red-500 active:scale-95;
+  }
+
+  .cyber-btn-secondary {
+    @apply cyber-btn bg-cyber-border text-gray-300 hover:bg-gray-600 active:scale-95;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .status-pass {
+    @apply status-badge bg-green-500/20 text-green-400 border border-green-500/30;
+  }
+
+  .status-warn {
+    @apply status-badge bg-yellow-500/20 text-yellow-400 border border-yellow-500/30;
+  }
+
+  .status-fail {
+    @apply status-badge bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .status-info {
+    @apply status-badge bg-blue-500/20 text-blue-400 border border-blue-500/30;
+  }
+
+  /* Glow animation for active scan */
+  .scan-pulse {
+    animation: scanPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes scanPulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
+  }
+}
