@@ -1,0 +1,259 @@
+/* AgentZero Report Stylesheet */
+
+:root {
+    --bg-dark: #0a0e17;
+    --bg-card: #111827;
+    --border: #1f2937;
+    --text-primary: #e5e7eb;
+    --text-secondary: #9ca3af;
+    --accent-green: #00ff88;
+    --critical: #ef4444;
+    --high: #f97316;
+    --medium: #eab308;
+    --low: #3b82f6;
+    --info: #6b7280;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 2rem;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.report-header h1 {
+    font-size: 1.8rem;
+    color: var(--accent-green);
+}
+
+.report-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.scan-meta {
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.executive-summary {
+    margin-bottom: 2rem;
+}
+
+.executive-summary h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: var(--accent-green);
+}
+
+.severity-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+.severity-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.severity-card .count {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.severity-card .label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.severity-card.critical .count { color: var(--critical); }
+.severity-card.high .count { color: var(--high); }
+.severity-card.medium .count { color: var(--medium); }
+.severity-card.low .count { color: var(--low); }
+.severity-card.info .count { color: var(--info); }
+
+.findings-section {
+    margin-bottom: 2rem;
+}
+
+.findings-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.module-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.module-header h3 {
+    font-size: 1.1rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.pass { background: rgba(0, 255, 136, 0.15); color: var(--accent-green); }
+.status-badge.warn { background: rgba(234, 179, 8, 0.15); color: var(--medium); }
+.status-badge.fail { background: rgba(239, 68, 68, 0.15); color: var(--critical); }
+.status-badge.info { background: rgba(107, 114, 128, 0.15); color: var(--info); }
+.status-badge.error { background: rgba(239, 68, 68, 0.15); color: var(--critical); }
+
+.finding {
+    padding: 1rem;
+    border-left: 3px solid var(--border);
+    margin-bottom: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0 4px 4px 0;
+}
+
+.finding.severity-critical { border-left-color: var(--critical); }
+.finding.severity-high { border-left-color: var(--high); }
+.finding.severity-medium { border-left-color: var(--medium); }
+.finding.severity-low { border-left-color: var(--low); }
+.finding.severity-info { border-left-color: var(--info); }
+
+.finding-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.severity-indicator {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.severity-indicator.critical { background: var(--critical); color: white; }
+.severity-indicator.high { background: var(--high); color: white; }
+.severity-indicator.medium { background: var(--medium); color: black; }
+.severity-indicator.low { background: var(--low); color: white; }
+.severity-indicator.info { background: var(--info); color: white; }
+
+.remediation {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.no-findings {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.data-block {
+    background: var(--bg-dark);
+    padding: 1rem;
+    border-radius: 6px;
+    font-family: 'Consolas', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    color: var(--text-secondary);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.vuln-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.cve-id {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--low);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.exploit-warning {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.patch-info {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.installed { color: var(--accent-green); font-weight: 600; }
+.not-installed { color: var(--critical); font-weight: 600; }
+
+.diagram-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+}
+
+footer {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+@media print {
+    body { background: white; color: black; padding: 1rem; }
+    .report-header { background: #f3f4f6; }
+    .module-card { background: #f9fafb; break-inside: avoid; }
+    .severity-card { background: #f9fafb; }
+}

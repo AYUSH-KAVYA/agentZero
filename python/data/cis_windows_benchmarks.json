@@ -1,0 +1,7 @@
+{
+  "_comment": "CIS Microsoft Windows 11 Benchmark rules — encoded as JSON. Will be populated in Step 4.",
+  "version": "1.0.0",
+  "benchmark_name": "CIS Microsoft Windows 11 Enterprise",
+  "benchmark_version": "1.0.0",
+  "rules": []
+}

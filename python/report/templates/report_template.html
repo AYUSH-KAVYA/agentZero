@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentZero — Scan Report</title>
+    <style>{{ css }}</style>
+</head>
+<body>
+    <header class="report-header">
+        <div class="logo">
+            <h1>🛡️ AgentZero</h1>
+            <p>Agent-less Windows Vulnerability Scanner</p>
+        </div>
+        <div class="scan-meta">
+            <p><strong>Scan Date:</strong> {{ timestamp }}</p>
+            <p><strong>Scan Type:</strong> {{ scan_type }}</p>
+            <p><strong>Hostname:</strong> {{ hostname }}</p>
+        </div>
+    </header>
+
+    <section class="executive-summary">
+        <h2>Executive Summary</h2>
+        <div class="severity-grid">
+            <div class="severity-card critical">
+                <span class="count">{{ summary.critical }}</span>
+                <span class="label">Critical</span>
+            </div>
+            <div class="severity-card high">
+                <span class="count">{{ summary.high }}</span>
+                <span class="label">High</span>
+            </div>
+            <div class="severity-card medium">
+                <span class="count">{{ summary.medium }}</span>
+                <span class="label">Medium</span>
+            </div>
+            <div class="severity-card low">
+                <span class="count">{{ summary.low }}</span>
+                <span class="label">Low</span>
+            </div>
+            <div class="severity-card info">
+                <span class="count">{{ summary.info }}</span>
+                <span class="label">Informational</span>
+            </div>
+        </div>
+    </section>
+
+    {% if system_results %}
+    <section class="findings-section">
+        <h2>System Scan Results</h2>
+        {% for key, module in system_results.modules.items() %}
+        <div class="module-card status-{{ module.status }}">
+            <div class="module-header">
+                <h3>{{ module.category }}</h3>
+                <span class="status-badge {{ module.status }}">{{ module.status | upper }}</span>
+            </div>
+            {% if module.findings %}
+            <div class="findings-list">
+                {% for finding in module.findings %}
+                <div class="finding severity-{{ finding.severity }}">
+                    <div class="finding-header">
+                        <span class="severity-indicator {{ finding.severity }}">{{ finding.severity | upper }}</span>
+                        <strong>{{ finding.title }}</strong>
+                    </div>
+                    <p>{{ finding.description }}</p>
+                    {% if finding.remediation %}
+                    <div class="remediation">
+                        <strong>Remediation:</strong> {{ finding.remediation }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-findings">No issues detected.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if network_results %}
+    <section class="findings-section">
+        <h2>Network Scan Results</h2>
+        {% for key, module in network_results.modules.items() %}
+        <div class="module-card">
+            <h3>{{ module.category }}</h3>
+            <pre class="data-block">{{ module.data | tojson(indent=2) }}</pre>
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if network_diagram %}
+    <section class="diagram-section">
+        <h2>Network Topology</h2>
+        <div class="diagram-container">
+            {{ network_diagram }}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if vuln_results %}
+    <section class="findings-section">
+        <h2>Vulnerability Analysis</h2>
+        {% for vuln in vuln_results.findings %}
+        <div class="vuln-card severity-{{ vuln.severity }}">
+            <div class="vuln-header">
+                <span class="severity-indicator {{ vuln.severity }}">{{ vuln.severity | upper }}</span>
+                <strong>{{ vuln.title }}</strong>
+                {% if vuln.cve %}
+                <code class="cve-id">{{ vuln.cve }}</code>
+                {% endif %}
+            </div>
+            <p>{{ vuln.description }}</p>
+            {% if vuln.exploit_available %}
+            <div class="exploit-warning">
+                ⚠️ Public exploit available: <a href="{{ vuln.exploit_url }}">{{ vuln.exploit_source }}</a>
+            </div>
+            {% endif %}
+            {% if vuln.patch_available %}
+            <div class="patch-info">
+                ✅ Patch available: {{ vuln.patch_kb }}
+                {% if vuln.patch_installed %}
+                <span class="installed">(Installed)</span>
+                {% else %}
+                <span class="not-installed">(NOT Installed)</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <footer>
+        <p>Generated by AgentZero v1.0.0 — Agent-less Windows Vulnerability Scanner</p>
+        <p>National Technical Research Organisation (NTRO) • {{ timestamp }}</p>
+    </footer>
+</body>
+</html>
