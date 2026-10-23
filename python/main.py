@@ -42,10 +42,13 @@ def run_network_scan(ip_range: str = None) -> dict:
     return runner.run_all()
 
 
-def run_vuln_scan() -> dict:
+def run_vuln_scan(system_results: dict = None) -> dict:
     """Execute vulnerability analysis on existing scan results."""
+    if system_results is None:
+        # Run system scan facts if not provided
+        system_results = run_system_scan()
     runner = VulnEngineRunner(progress_callback=emit_progress)
-    return runner.run_all()
+    return runner.run_all(system_scan_results=system_results)
 
 
 def run_full_scan(ip_range: str = None) -> dict:
@@ -54,7 +57,7 @@ def run_full_scan(ip_range: str = None) -> dict:
 
     system_results = run_system_scan()
     network_results = run_network_scan(ip_range)
-    vuln_results = run_vuln_scan()
+    vuln_results = run_vuln_scan(system_results=system_results)
 
     return {
         "scan_type": "full",
