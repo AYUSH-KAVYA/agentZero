@@ -1,6 +1,203 @@
 {
-  "_comment": "Offline CVE snapshot for Windows — curated subset of NVD database. Will be populated in Step 4.",
-  "version": "2024.1.0",
-  "last_updated": "2024-01-01T00:00:00Z",
-  "entries": []
+  "version": "2024.2.0",
+  "last_updated": "2024-10-15T00:00:00Z",
+  "description": "Curated Windows CVE database for offline vulnerability detection, exploit mapping, and patch verification",
+  "entries": [
+    {
+      "cve_id": "CVE-2024-38077",
+      "title": "Windows Remote Desktop Licensing Service Remote Code Execution (MadLicense)",
+      "description": "A remote code execution vulnerability in the Windows Remote Desktop Licensing Service allows an unauthenticated remote attacker to execute arbitrary code via malicious RPC packets.",
+      "cvss_score": 9.8,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      "severity": "critical",
+      "category": "RDP / Remote Code Execution",
+      "affected_conditions": {
+        "services": ["TermServLicensing"],
+        "min_build": 10240,
+        "max_build": 26100
+      },
+      "required_hotfix_kb": "KB5040442",
+      "exploit_available": true,
+      "exploit_source": "GitHub / Exploit-DB",
+      "exploit_type": "Remote Code Execution PoC",
+      "exploit_url": "https://github.com/noperator/CVE-2024-38077-PoC",
+      "remediation": "Apply Microsoft Security Update KB5040442 or disable the Remote Desktop Licensing service if not explicitly required."
+    },
+    {
+      "cve_id": "CVE-2024-30078",
+      "title": "Windows Wi-Fi Driver Remote Code Execution Vulnerability",
+      "description": "An unauthenticated attacker within physical proximity of a target Wi-Fi network can send malicious packets to an adapter, leading to remote code execution in the context of the networking subsystem.",
+      "cvss_score": 8.8,
+      "cvss_vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      "severity": "high",
+      "category": "Network Driver RCE",
+      "affected_conditions": {
+        "min_build": 10240,
+        "max_build": 22631
+      },
+      "required_hotfix_kb": "KB5039211",
+      "exploit_available": true,
+      "exploit_source": "GitHub PoC",
+      "exploit_type": "Packet Injection PoC",
+      "exploit_url": "https://github.com/dreadnode/CVE-2024-30078",
+      "remediation": "Install Windows Security Update KB5039211 (June 2024 Cumulative Update) immediately."
+    },
+    {
+      "cve_id": "CVE-2023-36884",
+      "title": "Windows Search and Office Remote Code Execution Vulnerability (RomCom)",
+      "description": "Microsoft Windows Search Remote Code Execution vulnerability exploited by threat actor Storm-0978 to execute arbitrary code via specially crafted Office documents that invoke remote payload execution.",
+      "cvss_score": 8.3,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+      "severity": "high",
+      "category": "Search / Document RCE",
+      "affected_conditions": {
+        "min_build": 10240,
+        "max_build": 22621
+      },
+      "required_hotfix_kb": "KB5029244",
+      "exploit_available": true,
+      "exploit_source": "CISA KEV / Exploit-DB",
+      "exploit_type": "Wild Exploitation (RomCom RAT)",
+      "exploit_url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+      "remediation": "Deploy August 2023 Cumulative Update KB5029244 or configure BlockOfficeCreateProcess rule in Attack Surface Reduction."
+    },
+    {
+      "cve_id": "CVE-2023-24932",
+      "title": "Secure Boot Security Feature Bypass (BlackLotus UEFI Bootkit)",
+      "description": "An attacker with administrative privileges or physical access can bypass Secure Boot by executing a malicious boot manager, installing UEFI bootkit malware that survives OS reinstalls.",
+      "cvss_score": 6.7,
+      "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H",
+      "severity": "medium",
+      "category": "Secure Boot Bypass",
+      "affected_conditions": {
+        "secure_boot_enabled": true,
+        "revocations_applied": false
+      },
+      "required_hotfix_kb": "KB5025885",
+      "exploit_available": true,
+      "exploit_source": "GitHub / BlackLotus",
+      "exploit_type": "UEFI Bootkit PoC",
+      "exploit_url": "https://github.com/ldpreload/BlackLotus",
+      "remediation": "Apply KB5025885 and update UEFI revocation list (DBX) following Microsoft's three-phase mitigation plan."
+    },
+    {
+      "cve_id": "CVE-2022-30190",
+      "title": "Microsoft Windows Support Diagnostic Tool (MSDT) Remote Code Execution (Follina)",
+      "description": "A remote code execution vulnerability exists when MSDT is called using the URL protocol from an application like Microsoft Word. An attacker who successfully exploits this vulnerability can run arbitrary code with the privileges of the calling application.",
+      "cvss_score": 7.8,
+      "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+      "severity": "high",
+      "category": "Protocol Handler RCE",
+      "affected_conditions": {
+        "registry_keys": ["HKCR\\ms-msdt"],
+        "min_build": 9600,
+        "max_build": 22000
+      },
+      "required_hotfix_kb": "KB5014697",
+      "exploit_available": true,
+      "exploit_source": "Metasploit / Exploit-DB",
+      "exploit_type": "Metasploit exploit/windows/fileformat/msdt_follina",
+      "exploit_url": "https://www.exploit-db.com/exploits/50937",
+      "remediation": "Apply Cumulative Update KB5014697 or disable the MSDT URL Protocol via registry: reg delete HKEY_CLASSES_ROOT\\ms-msdt /f."
+    },
+    {
+      "cve_id": "CVE-2021-34527",
+      "title": "Windows Print Spooler Remote Code Execution (PrintNightmare)",
+      "description": "The Windows Print Spooler service improperly performs privileged file operations, allowing an authenticated attacker to execute arbitrary code with SYSTEM privileges or conduct remote code execution.",
+      "cvss_score": 8.8,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+      "severity": "high",
+      "category": "Privilege Escalation / Spooler",
+      "affected_conditions": {
+        "services": ["Spooler"],
+        "min_build": 7601,
+        "max_build": 22000
+      },
+      "required_hotfix_kb": "KB5004945",
+      "exploit_available": true,
+      "exploit_source": "Metasploit / GitHub",
+      "exploit_type": "Metasploit exploit/windows/local/cve_2021_34527_printnightmare",
+      "exploit_url": "https://github.com/cube0x0/CVE-2021-34527",
+      "remediation": "Install KB5004945 and set PointAndPrint registry keys: RestrictDriverInstallationToAdministrators=1, NoWarningNoElevationOnInstall=0."
+    },
+    {
+      "cve_id": "CVE-2020-0796",
+      "title": "Windows SMBv3 Compression Remote Code Execution (SMBGhost)",
+      "description": "A remote code execution vulnerability exists in the way that Microsoft Server Message Block 3.1.1 (SMBv3) handles certain requests. An unauthenticated attacker could execute code on the SMB server or client.",
+      "cvss_score": 10.0,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+      "severity": "critical",
+      "category": "SMBv3 RCE / Wormable",
+      "affected_conditions": {
+        "min_build": 18362,
+        "max_build": 18363,
+        "smbv3_compression": true
+      },
+      "required_hotfix_kb": "KB4551762",
+      "exploit_available": true,
+      "exploit_source": "Exploit-DB / Metasploit",
+      "exploit_type": "Wormable RCE PoC",
+      "exploit_url": "https://www.exploit-db.com/exploits/48537",
+      "remediation": "Apply KB4551762 or disable SMBv3 compression: Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters' DisableCompression -Type DWORD -Value 1 -Force."
+    },
+    {
+      "cve_id": "CVE-2019-0708",
+      "title": "Windows Remote Desktop Services Remote Code Execution (BlueKeep)",
+      "description": "A pre-authentication remote code execution vulnerability exists in Remote Desktop Services when an unauthenticated attacker connects to the target system using RDP and sends specially crafted requests.",
+      "cvss_score": 9.8,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      "severity": "critical",
+      "category": "RDP / Wormable",
+      "affected_conditions": {
+        "rdp_enabled": true,
+        "nla_required": false,
+        "min_build": 2600,
+        "max_build": 7601
+      },
+      "required_hotfix_kb": "KB4499175",
+      "exploit_available": true,
+      "exploit_source": "Metasploit",
+      "exploit_type": "Metasploit exploit/windows/rdp/cve_2019_0708_bluekeep_rce",
+      "exploit_url": "https://www.exploit-db.com/exploits/47683",
+      "remediation": "Apply KB4499175 and enforce Network Level Authentication (NLA) on all RDP endpoints."
+    },
+    {
+      "cve_id": "CVE-2023-36049",
+      "title": ".NET and Visual Studio Remote Code Execution Vulnerability",
+      "description": "A remote code execution vulnerability in .NET Framework and .NET Core via untrusted input deserialization in System.Data.DataSet or SOAP formatters.",
+      "cvss_score": 8.8,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+      "severity": "high",
+      "category": ".NET Deserialization RCE",
+      "affected_conditions": {
+        "dotnet_versions": ["4.8", "4.8.1", "6.0.0-6.0.25", "7.0.0-7.0.14", "8.0.0-8.0.0"]
+      },
+      "required_hotfix_kb": "KB5032874",
+      "exploit_available": true,
+      "exploit_source": "GitHub Advisory / PoC",
+      "exploit_type": "Deserialization Payload",
+      "exploit_url": "https://github.com/advisories/GHSA-m8w5-wcv2-r6j2",
+      "remediation": "Update .NET runtime to latest servicing release (8.0.1+, 7.0.15+, 6.0.26+) or install security patch KB5032874."
+    },
+    {
+      "cve_id": "CVE-2020-1472",
+      "title": "Netlogon Elevation of Privilege Vulnerability (Zerologon)",
+      "description": "An elevation of privilege vulnerability exists when an attacker establishes a vulnerable Netlogon secure channel connection to a domain controller using the Netlogon Remote Protocol (MS-NRPC), allowing full domain takeover without credentials.",
+      "cvss_score": 10.0,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+      "severity": "critical",
+      "category": "Netlogon / Domain Takeover",
+      "affected_conditions": {
+        "domain_role": ["PrimaryDomainController", "BackupDomainController", "DomainMember"],
+        "min_build": 6002,
+        "max_build": 19041
+      },
+      "required_hotfix_kb": "KB4565349",
+      "exploit_available": true,
+      "exploit_source": "Exploit-DB / GitHub",
+      "exploit_type": "Python Exploit Script (Zerologon)",
+      "exploit_url": "https://github.com/SecuraBV/CVE-2020-1472",
+      "remediation": "Deploy patch KB4565349 and enforce secure RPC communications with FullEnforcement=1 in Netlogon parameters."
+    }
+  ]
 }
