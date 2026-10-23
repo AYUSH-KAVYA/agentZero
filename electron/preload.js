@@ -29,6 +29,11 @@ contextBridge.exposeInMainWorld('agentZero', {
     // Return cleanup function
     return () => ipcRenderer.removeListener('scan:progress', handler);
   },
+  onScanLog: (callback) => {
+    const handler = (_event, data) => callback(data);
+    ipcRenderer.on('scan:log', handler);
+    return () => ipcRenderer.removeListener('scan:log', handler);
+  },
   onScanComplete: (callback) => {
     const handler = (_event, data) => callback(data);
     ipcRenderer.on('scan:complete', handler);

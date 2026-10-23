@@ -38,9 +38,10 @@ function runScanner(scanType, options = {}) {
       // Production: use bundled .exe
       proc = spawn(scannerExe, args, { windowsHide: true });
     } else {
-      // Development: use python interpreter
+      // Development: use python interpreter (python3 on Unix, python on Windows)
+      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
       const pythonScript = path.join(__dirname, '..', 'python', 'main.py');
-      proc = spawn('python', [pythonScript, ...args], {
+      proc = spawn(pythonCmd, [pythonScript, ...args], {
         windowsHide: true,
         env: { ...process.env },
       });
@@ -55,17 +56,31 @@ function runScanner(scanType, options = {}) {
     });
 
     proc.stderr.on('data', (data) => {
-      const line = data.toString().trim();
-      stderr += line + '\n';
+      const rawText = data.toString();
+      const lines = rawText.split('\n');
 
-      // Try to parse progress updates from stderr
-      try {
-        const progress = JSON.parse(line);
-        if (progress.progress !== undefined && mainWindowRef) {
-          mainWindowRef.webContents.send('scan:progress', progress);
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) continue;
+        stderr += line + '\n';
+
+        // Forward raw log line to UI terminal
+        if (mainWindowRef && !mainWindowRef.isDestroyed()) {
+          mainWindowRef.webContents.send('scan:log', {
+            text: line,
+            time: new Date().toLocaleTimeString(),
+          });
         }
-      } catch {
-        // Not JSON, just a log line — ignore
+
+        // Try to parse structured progress updates
+        try {
+          const progress = JSON.parse(line);
+          if (progress.progress !== undefined && mainWindowRef && !mainWindowRef.isDestroyed()) {
+            mainWindowRef.webContents.send('scan:progress', progress);
+          }
+        } catch {
+          // Plain text log line
+        }
       }
     });
 
