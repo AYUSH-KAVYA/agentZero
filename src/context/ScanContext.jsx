@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import { mockScanData } from '../data/mockScanData';
 
 const ScanContext = createContext(null);
 
@@ -8,11 +9,13 @@ const initialState = {
   scanType: null, // 'system' | 'network' | 'vulnerabilities' | 'full'
   progress: 0,
   currentModule: '',
+  logs: [],
 
   // Results
   systemResults: null,
   networkResults: null,
   vulnResults: null,
+  posture: null,
 
   // Metadata
   lastScanTime: null,
@@ -21,6 +24,8 @@ const initialState = {
 
   // Admin status
   isAdmin: false,
+  platform: null,
+  isMockData: false,
 };
 
 function scanReducer(state, action) {
@@ -31,8 +36,14 @@ function scanReducer(state, action) {
         isScanning: true,
         scanType: action.payload,
         progress: 0,
-        currentModule: 'Initializing...',
+        currentModule: 'Initializing execution environment...',
         error: null,
+        logs: [
+          {
+            text: `[${new Date().toLocaleTimeString()}] Initiating ${action.payload} scan...`,
+            time: new Date().toLocaleTimeString(),
+          },
+        ],
       };
 
     case 'SCAN_PROGRESS':
@@ -42,23 +53,44 @@ function scanReducer(state, action) {
         currentModule: action.payload.module || state.currentModule,
       };
 
-    case 'SCAN_COMPLETE':
+    case 'SCAN_LOG':
+      return {
+        ...state,
+        logs: [...state.logs.slice(-150), action.payload],
+      };
+
+    case 'SCAN_COMPLETE': {
+      const type = action.payload.type;
+      const res = action.payload.results;
       return {
         ...state,
         isScanning: false,
         scanType: null,
         progress: 100,
-        currentModule: 'Complete',
+        currentModule: 'Scan Complete',
         lastScanTime: new Date().toISOString(),
-        ...(action.payload.type === 'system' && { systemResults: action.payload.results }),
-        ...(action.payload.type === 'network' && { networkResults: action.payload.results }),
-        ...(action.payload.type === 'vulnerabilities' && { vulnResults: action.payload.results }),
-        ...(action.payload.type === 'full' && {
-          systemResults: action.payload.results.system,
-          networkResults: action.payload.results.network,
-          vulnResults: action.payload.results.vulnerabilities,
+        isMockData: false,
+        ...(type === 'system' && { systemResults: res }),
+        ...(type === 'network' && { networkResults: res }),
+        ...(type === 'vulnerabilities' && {
+          vulnResults: res,
+          posture: res?.posture || null,
         }),
+        ...(type === 'full' && {
+          systemResults: res?.system,
+          networkResults: res?.network,
+          vulnResults: res?.vulnerabilities,
+          posture: res?.vulnerabilities?.posture || null,
+        }),
+        logs: [
+          ...state.logs,
+          {
+            text: `[${new Date().toLocaleTimeString()}] Scan completed successfully.`,
+            time: new Date().toLocaleTimeString(),
+          },
+        ],
       };
+    }
 
     case 'SCAN_ERROR':
       return {
@@ -66,13 +98,48 @@ function scanReducer(state, action) {
         isScanning: false,
         scanType: null,
         error: action.payload,
+        logs: [
+          ...state.logs,
+          {
+            text: `[${new Date().toLocaleTimeString()}] ERROR: ${action.payload}`,
+            time: new Date().toLocaleTimeString(),
+          },
+        ],
+      };
+
+    case 'LOAD_MOCK_DATA':
+      return {
+        ...state,
+        isScanning: false,
+        scanType: null,
+        progress: 100,
+        currentModule: 'Demonstration Profile Loaded',
+        lastScanTime: mockScanData.timestamp,
+        isMockData: true,
+        systemResults: mockScanData.system,
+        networkResults: mockScanData.network,
+        vulnResults: mockScanData.vulnerabilities,
+        posture: mockScanData.posture,
+        error: null,
+        logs: [
+          {
+            text: `[${new Date().toLocaleTimeString()}] Loaded realistic Windows 11 Enterprise audit dataset for evaluation.`,
+            time: new Date().toLocaleTimeString(),
+          },
+        ],
       };
 
     case 'SET_ADMIN':
       return { ...state, isAdmin: action.payload };
 
+    case 'SET_PLATFORM':
+      return { ...state, platform: action.payload };
+
     case 'CLEAR_ERROR':
       return { ...state, error: null };
+
+    case 'CLEAR_LOGS':
+      return { ...state, logs: [] };
 
     case 'CLEAR_RESULTS':
       return {
@@ -80,7 +147,9 @@ function scanReducer(state, action) {
         systemResults: null,
         networkResults: null,
         vulnResults: null,
+        posture: null,
         lastScanTime: null,
+        isMockData: false,
       };
 
     default:
@@ -99,6 +168,12 @@ export function ScanProvider({ children }) {
       dispatch({ type: 'SCAN_PROGRESS', payload: data });
     });
 
+    const cleanupLog = window.agentZero.onScanLog
+      ? window.agentZero.onScanLog((data) => {
+          dispatch({ type: 'SCAN_LOG', payload: data });
+        })
+      : () => {};
+
     const cleanupComplete = window.agentZero.onScanComplete((data) => {
       dispatch({ type: 'SCAN_COMPLETE', payload: data });
     });
@@ -107,13 +182,18 @@ export function ScanProvider({ children }) {
       dispatch({ type: 'SCAN_ERROR', payload: data.error });
     });
 
-    // Check admin status
+    // Fetch system info
     window.agentZero.isAdmin().then((isAdmin) => {
       dispatch({ type: 'SET_ADMIN', payload: isAdmin });
     });
 
+    window.agentZero.getPlatformInfo().then((info) => {
+      dispatch({ type: 'SET_PLATFORM', payload: info });
+    });
+
     return () => {
       cleanupProgress();
+      cleanupLog();
       cleanupComplete();
       cleanupError();
     };
@@ -121,7 +201,10 @@ export function ScanProvider({ children }) {
 
   const startScan = useCallback(async (type, options = {}) => {
     if (!window.agentZero) {
-      dispatch({ type: 'SCAN_ERROR', payload: 'Electron IPC not available' });
+      dispatch({
+        type: 'SCAN_ERROR',
+        payload: 'Electron IPC unavailable in standalone browser. Use "Load Audit Sample" to inspect data.',
+      });
       return;
     }
 
@@ -158,14 +241,20 @@ export function ScanProvider({ children }) {
     if (window.agentZero) {
       await window.agentZero.cancelScan();
     }
-    dispatch({ type: 'SCAN_ERROR', payload: 'Scan cancelled by user' });
+    dispatch({ type: 'SCAN_ERROR', payload: 'Scan cancelled by user.' });
+  }, []);
+
+  const loadMockData = useCallback(() => {
+    dispatch({ type: 'LOAD_MOCK_DATA' });
   }, []);
 
   const value = {
     ...state,
     startScan,
     cancelScan,
+    loadMockData,
     clearError: () => dispatch({ type: 'CLEAR_ERROR' }),
+    clearLogs: () => dispatch({ type: 'CLEAR_LOGS' }),
     clearResults: () => dispatch({ type: 'CLEAR_RESULTS' }),
   };
 
