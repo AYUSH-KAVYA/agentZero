@@ -160,9 +160,13 @@ function scanReducer(state, action) {
 export function ScanProvider({ children }) {
   const [state, dispatch] = useReducer(scanReducer, initialState);
 
-  // Listen for scan events from Electron IPC
+  // Listen for scan events from Electron IPC (or initialize browser/Vercel demo mode)
   useEffect(() => {
-    if (!window.agentZero) return;
+    if (!window.agentZero) {
+      // Running in browser (e.g. Vercel deployment)
+      dispatch({ type: 'LOAD_MOCK_DATA' });
+      return;
+    }
 
     const cleanupProgress = window.agentZero.onScanProgress((data) => {
       dispatch({ type: 'SCAN_PROGRESS', payload: data });
@@ -201,10 +205,28 @@ export function ScanProvider({ children }) {
 
   const startScan = useCallback(async (type, options = {}) => {
     if (!window.agentZero) {
-      dispatch({
-        type: 'SCAN_ERROR',
-        payload: 'Electron IPC unavailable in standalone browser. Use "Load Audit Sample" to inspect data.',
-      });
+      // Browser / Vercel cloud demo mode: simulate scan with progress and terminal output
+      dispatch({ type: 'SCAN_START', payload: type });
+      let curr = 0;
+      const stepInterval = setInterval(() => {
+        curr += 25;
+        if (curr < 100) {
+          dispatch({
+            type: 'SCAN_PROGRESS',
+            payload: { progress: curr, module: `Auditing ${type} vectors...` },
+          });
+          dispatch({
+            type: 'SCAN_LOG',
+            payload: {
+              text: `[${new Date().toLocaleTimeString()}] Cloud Simulation: probing ${type} subsystems...`,
+              time: new Date().toLocaleTimeString(),
+            },
+          });
+        } else {
+          clearInterval(stepInterval);
+          dispatch({ type: 'LOAD_MOCK_DATA' });
+        }
+      }, 350);
       return;
     }
 
