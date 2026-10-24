@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AgentZero — Agent-less Windows System Vulnerability & Network Scanner
+AgentZero — Agent-less macOS System Vulnerability & Network Scanner
 Main CLI entry point.
 
 This script is the single entry point for all scanning operations.
@@ -111,7 +111,7 @@ def generate_scan_report(format_type: str = "html", data: dict = None, output_fi
 
 def main():
     parser = argparse.ArgumentParser(
-        description="AgentZero — Agent-less Windows Vulnerability Scanner"
+        description="AgentZero — Agent-less macOS Vulnerability & Network Security Scanner"
     )
     parser.add_argument(
         "--scan-type",

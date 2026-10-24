@@ -1,79 +1,62 @@
 """
-Open Ports & Service Listener Scanner
-=====================================
-Rapid TCP port scanner auditing critical administrative, remote management,
-and legacy protocol ports on localhost and local interfaces.
+macOS Open Ports & Listening Daemons Scanner
+Enumerates all active TCP listening sockets and owning processes via lsof.
 """
+import subprocess
+from typing import Dict, Any
 
-import socket
-from typing import Dict, Any, List
-
-COMMON_AUDIT_PORTS = [
-    (21, "FTP", "Insecure cleartext file transfer"),
-    (22, "SSH", "Secure Shell remote terminal"),
-    (23, "Telnet", "Insecure unencrypted remote console"),
-    (80, "HTTP", "Cleartext web server"),
-    (135, "MSRPC", "Microsoft RPC Endpoint Mapper"),
-    (139, "NetBIOS-SSN", "Legacy NetBIOS Session Service"),
-    (443, "HTTPS", "Encrypted web server"),
-    (445, "SMB", "Server Message Block file & print sharing"),
-    (1433, "MSSQL", "Microsoft SQL Server database engine"),
-    (3389, "RDP", "Remote Desktop Protocol"),
-    (5985, "WinRM-HTTP", "Windows Remote Management (unencrypted HTTP)"),
-    (5986, "WinRM-HTTPS", "Windows Remote Management (HTTPS)"),
-    (8080, "HTTP-Proxy", "Alternative web service")
-]
-
+RISKY_PORTS = {
+    21: ("FTP", "critical"),
+    22: ("SSH", "medium"),
+    23: ("Telnet", "critical"),
+    80: ("HTTP (Unencrypted)", "low"),
+    445: ("SMB", "high"),
+    5900: ("VNC / Screen Sharing", "high"),
+    8080: ("HTTP Alternate", "low"),
+}
 
 def scan(ip_range: str = None) -> Dict[str, Any]:
-    """Scans and reports open listening ports on the host."""
     result = {
-        "category": "Open Ports Status",
+        "category": "Listening Ports & Services",
         "status": "info",
         "data": [],
         "findings": []
     }
+    ports = []
 
-    open_ports = []
+    try:
+        res = subprocess.run(["lsof", "-iTCP", "-sTCP:LISTEN", "-n", "-P"], capture_output=True, text=True, timeout=5)
+        if res.returncode == 0:
+            for line in res.stdout.splitlines()[1:]:
+                parts = line.split()
+                if len(parts) >= 9:
+                    addr_part = parts[8]
+                    port = None
+                    if ":" in addr_part:
+                        try:
+                            port = int(addr_part.split(":")[-1])
+                        except ValueError:
+                            pass
+                    entry = {
+                        "command": parts[0],
+                        "pid": parts[1],
+                        "user": parts[2],
+                        "type": parts[4],
+                        "address": addr_part,
+                        "port": port
+                    }
+                    ports.append(entry)
 
-    for port, service, desc in COMMON_AUDIT_PORTS:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(0.3)
-        code = s.connect_ex(("127.0.0.1", port))
-        s.close()
+                    if port and port in RISKY_PORTS:
+                        svc_name, sev = RISKY_PORTS[port]
+                        result["findings"].append({
+                            "severity": sev,
+                            "title": f"Sensitive Port {port} ({svc_name}) Listening",
+                            "description": f"Process '{parts[0]}' (PID {parts[1]}) is actively listening on port {port} ({svc_name}).",
+                            "remediation": f"Verify whether {svc_name} service is intended to accept incoming network connections."
+                        })
+    except Exception as e:
+        result["error"] = str(e)
 
-        if code == 0:
-            open_ports.append({
-                "port": port,
-                "protocol": "TCP",
-                "service": service,
-                "state": "LISTENING",
-                "description": desc
-            })
-
-            # Check for legacy high-risk ports
-            if port in (21, 23):
-                result["status"] = "fail"
-                result["findings"].append({
-                    "severity": "critical",
-                    "title": f"Insecure Legacy Protocol Listening (Port {port} - {service})",
-                    "description": f"Port {port} ({service}) transmits authentication credentials and session payloads in unencrypted plaintext.",
-                    "remediation": f"Disable the {service} service immediately and migrate to SSH / SFTP."
-                })
-            elif port == 445:
-                result["findings"].append({
-                    "severity": "medium",
-                    "title": "SMB File Sharing Service Listening (Port 445)",
-                    "description": "Port 445 is open. Ensure SMBv1 is disabled and require SMB signing / encryption to prevent relay and interception attacks.",
-                    "remediation": "Disable SMBv1: Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol."
-                })
-            elif port == 3389:
-                result["findings"].append({
-                    "severity": "medium",
-                    "title": "Remote Desktop Protocol Listening (Port 3389)",
-                    "description": "RDP is actively listening on standard port 3389. Exposed RDP interfaces are heavily targeted by automated brute-force sprayers.",
-                    "remediation": "Enforce Network Level Authentication (NLA) and restrict RDP firewall access to a dedicated VPN / bastion jump box."
-                })
-
-    result["data"] = open_ports
+    result["data"] = ports
     return result

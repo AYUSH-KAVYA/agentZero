@@ -123,7 +123,7 @@ function scanReducer(state, action) {
         error: null,
         logs: [
           {
-            text: `[${new Date().toLocaleTimeString()}] Loaded realistic Windows 11 Enterprise audit dataset for evaluation.`,
+            text: `[${new Date().toLocaleTimeString()}] Loaded realistic macOS Sonoma / Sequoia audit dataset for evaluation.`,
             time: new Date().toLocaleTimeString(),
           },
         ],

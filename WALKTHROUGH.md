@@ -1,147 +1,115 @@
-# 🚀 AgentZero — Complete Walkthrough & Deployment Guide
+# 🚀 AgentZero — Complete macOS Walkthrough & Desktop App Guide
 
 > **National Technical Research Organisation (NTRO)**  
-> **Topic:** Agent-less Windows System Vulnerability and Network Scanner (PS92)
+> **Topic:** Agent-less macOS System Vulnerability and Network Scanner  
+> **Platform:** Apple macOS (Apple Silicon `arm64` & Intel `x64`, Sonoma 14 / Sequoia 15)
 
 ---
 
 ## 📖 Walkthrough Overview
 
 This document walks you through the entire AgentZero system:
-1. **How the System Works**
+1. **How the System Works on macOS**
 2. **Complete Tech Stack Used & Why**
-3. **How to Run the Project (Development, Desktop Electron, and Standalone CLI)**
-4. **How to Deploy on Vercel**
-5. **How to Build the Standalone Windows Executable**
+3. **How to Run the Project (Development, Desktop App, and CLI)**
+4. **How to Install and Use the Native `.dmg` Installer**
+5. **How to Rebuild the macOS Desktop Application**
 
 ---
 
-## 1. How the System Works
+## 1. How the System Works on macOS
 
-AgentZero is an on-demand, agent-less cybersecurity scanner designed to evaluate Windows 10/11 endpoints without installing permanent background services.
+AgentZero is an on-demand, agent-less cybersecurity scanner designed to evaluate macOS systems without installing permanent background daemons.
 
 ```
-React 18 / Tailwind UI  <──IPC──>  Electron Main  <──child_process──>  Python Engine (.exe)
-  - Live Dashboard                   - Preload bridge                    - 26 System Checks
+React 18 / Tailwind UI  <──IPC──>  Electron Main  <──child_process──>  Python 3 Engine
+  - Security Dashboard               - Preload bridge                    - 26 macOS Checks
   - Network Topology                 - Event streaming                   - 10 Network Checks
-  - CVE & Exploit Map                - UAC elevation                     - Exploit Crawler
+  - CVE & Exploit Map                - Resource resolution               - CIS Benchmarks
 ```
 
-1. **User Interaction**: The user launches the application and selects a scan type (Full Audit, System Audit, Network Reconnaissance, or Vulnerability Analysis).
-2. **Background Execution**: Electron silently spawns the standalone Python extraction engine using `child_process.spawn()`.
-3. **Telemetry Streaming**: Real-time progress updates and log messages are piped from Python's `stderr` back through the `contextBridge` to the React UI.
-4. **Analysis & Correlation**:
-   - The engine audits 26 Windows subsystem categories (AMSI, Defender exclusions, UAC, firewall, hotfixes, unquoted services, plaintext PowerShell history).
-   - It performs network reconnaissance across 10 categories (ARP spoofing detection, listening ports, RPC endpoints, active sockets, VLAN attached devices).
-   - It cross-references system state against an offline CVE database and CIS Windows benchmarks.
-   - It crawls Exploit-DB and GitHub Security Advisories for weaponized public exploits.
-   - It checks Microsoft KB patch status and calculates a CVSS v3.1 Security Posture Score (0–100 / A–F).
-5. **Rendering & Export**: Results populate the interactive dashboard, render an SVG/Canvas network topology diagram, and allow 1-click HTML or PDF report generation.
+1. **User Interaction**: The user launches the application (or runs the `.dmg` installer) and clicks **Full Audit**, **Audit System**, **Audit Network**, or **Vulnerability Analysis**.
+2. **Process Execution**: Electron's main process spawns `python3` targeting the bundled scanning engine (`python/main.py`), passing arguments like `--scan-type system --output-format json`.
+3. **Native macOS Audits**: The Python engine invokes native macOS Darwin utilities:
+   - `sw_vers`, `uname -r`, `sysctl hw.model` for OS architecture and hardware details
+   - `csrutil status` to verify System Integrity Protection (SIP)
+   - `fdesetup status` to verify FileVault 2 APFS disk encryption
+   - `spctl --status` to audit Gatekeeper code signing enforcement
+   - `/usr/libexec/ApplicationFirewall/socketfilterfw` for Application Firewall & stealth mode
+   - `nvram` & `bputil` to audit Apple Silicon Secure Boot policy
+   - `dscl` for Directory users, groups, and root account status
+   - `lsof` for open listening ports, active TCP sockets, and owning process PIDs
+   - `scutil --dns` and `networksetup` for DNS and network services
+4. **Compliance & Vulnerability Analysis**: Findings are cross-referenced with:
+   - **CIS Apple macOS 14/15 Benchmark rules** (13 automated checks)
+   - **Offline macOS CVE database** (BLASTPASS, XNU Kernel, WebKit, SIP bypasses)
+5. **Real-time Feedback**: Scan progress (0% to 100%) and terminal log lines stream back to the UI in real time via Electron IPC.
+6. **Reporting**: One-click generation of consolidated HTML and PDF reports with executive summaries, CVSS severity breakdowns, and remediation commands.
 
 ---
 
-## 2. Complete Tech Stack Used
+## 2. Complete Tech Stack Used & Why
 
-| Layer | Technology | Reason Selected |
+| Layer | Technology | Why It Was Chosen |
 |---|---|---|
-| **Frontend Framework** | **React 18** + **Vite** | Blazing-fast component rendering, instant HMR, modern hooks |
-| **Styling** | **Tailwind CSS** | Dark cybersecurity theme, responsive layout, status badges |
-| **Icons** | **Lucide React** | Clean, lightweight SVG security icons |
-| **Charts** | **Recharts** | Interactive CVSS severity donut charts and metric visualizations |
-| **Desktop Shell** | **Electron 28+** | Native OS integration, window lifecycle, background process control |
-| **IPC Bridge** | **contextBridge** + `preload.js` | Secure process isolation preventing direct renderer Node access |
-| **Scanning Engine** | **Python 3.10+ / 3.11+** | Rapid data parsing, rich security libraries, Windows COM access |
-| **OS Interfaces** | **WMI**, **winreg**, **PowerShell** | Microsoft-approved management APIs without third-party agents |
-| **Network Probing** | **socket**, **psutil**, **scapy** | Port scanning, socket-to-PID mapping, ARP table enumeration |
-| **Reporting** | **Jinja2** + **WeasyPrint** | Self-contained executive HTML and PDF report generation |
-| **Packaging** | **PyInstaller** + **electron-builder** | Single `.exe` deployment with administrative UAC manifest |
+| **Desktop Shell** | **Electron 28** | Cross-platform desktop shell providing native window management, system IPC, and seamless integration on macOS |
+| **Frontend Framework** | **React 18** | High-performance reactive UI with modular component hierarchy and state management |
+| **Build Tooling** | **Vite 5** | Instant hot-module replacement (HMR) and optimized production bundle packaging |
+| **Styling & Theme** | **Tailwind CSS 3** | Utility-first cyberpunk dark theme styled for security command center environments |
+| **Charts & Visuals** | **Recharts** | Interactive SVG charts for CVSS v3.1 severity distribution donut rendering |
+| **Icons** | **Lucide React** | Clean, consistent cybersecurity icon set (Shield, Terminal, Network, AlertTriangle) |
+| **Scanning Engine** | **Python 3.9+** | Native execution on macOS without external runtimes, leveraging Darwin command-line utilities |
+| **Packaging Pipeline**| **electron-builder**| Packages the app into a native Apple Silicon (`arm64`) `.dmg` installer and `.app` bundle |
 
 ---
 
 ## 3. How to Run the Project
 
-### A. Run in Development Mode
+### Option A: Development Mode (Live Reload)
 ```bash
-# 1. Install Node.js packages
-npm install
-
-# 2. Setup Python environment
-cd python
-python3 -m venv venv
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-# venv\Scripts\activate
-pip install -r requirements.txt
-cd ..
-
-# 3. Launch Desktop Electron Application
+# Start Vite dev server and launch Electron desktop window
 npm run dev:electron
-
-# Or launch Web Browser Preview only
-npm run dev
 ```
 
-### B. Run the Python Engine via CLI
+### Option B: Standalone Python CLI Scan
+You can execute the scanning engine directly from your terminal:
 ```bash
-cd python
+# Run system audit and output JSON
+python3 python/main.py --scan-type system --output-format json
 
-# Run full audit
-python3 main.py --scan-type full
+# Run network reconnaissance
+python3 python/main.py --scan-type network --output-format json
 
-# Run network reconnaissance only
-python3 main.py --scan-type network
+# Run full consolidated audit
+python3 python/main.py --scan-type full --output-format json
 
-# Generate standalone HTML report
-python3 main.py --scan-type report --report-format html
+# Generate consolidated HTML report
+python3 python/main.py --scan-type report --report-format html
 ```
 
 ---
 
-## 4. How to Deploy the Web Dashboard on Vercel
+## 4. How to Install and Use the Native `.dmg`
 
-AgentZero includes a dedicated cloud demonstration mode. When deployed to Vercel (where native Windows Electron APIs are absent), it automatically operates in **Cloud Simulation Mode**, enabling live interactive testing of the dashboard, network topology graph, and CVE exploit maps.
+The application is built into a standalone Apple Silicon installer:
+- Local Release: `release/AgentZero-1.0.1-arm64.dmg` (88 MB)
+- Destination Folder: `/Users/ayush___ks/agentZero Final/AgentZero-1.0.1-arm64.dmg`
 
-### Step-by-Step Vercel Deployment:
+1. Double-click `AgentZero-1.0.1-arm64.dmg` or run:
+   ```bash
+   open "/Users/ayush___ks/agentZero Final/AgentZero-1.0.1-arm64.dmg"
+   ```
+2. Drag **AgentZero** into the **Applications** shortcut.
+3. Launch **AgentZero** from Launchpad or `/Applications`.
 
-#### Option A: Deploy via Vercel Web Dashboard (1-Click)
-1. Ensure your repository is pushed to GitHub: `https://github.com/AYUSH-KAVYA/agentZero.git`.
-2. Visit [https://vercel.com](https://vercel.com) and log in.
-3. Click **"Add New Project"** and select **`agentZero`**.
-4. Vercel automatically detects the configuration from [`vercel.json`](file:///Users/ayush___ks/Downloads/agentZero/vercel.json):
-   - **Framework Preset**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-5. Click **"Deploy"**. The site will be live at `https://agent-zero-xxxx.vercel.app` in under 60 seconds!
-
-#### Option B: Deploy via Vercel CLI
-```bash
-npm i -g vercel
-vercel
-```
+*(If Gatekeeper shows an Unidentified Developer notice on first launch, right-click `AgentZero.app` $\rightarrow$ Open $\rightarrow$ Open, or run `xattr -cr /Applications/AgentZero.app`)*.
 
 ---
 
-## 5. How to Build the Standalone Windows Executable
+## 5. How to Rebuild the Desktop App
 
-To distribute the tool as a **single, portable `.exe`** with zero installation required:
-
-### On a Windows 10/11 Machine:
-Run the one-click build script:
-```cmd
-scripts\build-all.bat
+Whenever you modify any code, run:
+```bash
+npm run build:mac
 ```
-
-Or step-by-step:
-```cmd
-# Step 1: Compile the Python backend into scanner.exe
-npm run build:python
-
-# Step 2: Package React + Electron into Windows installer & portable exe
-npm run build:electron
-```
-
-The output executables are generated in:
-- `release/AgentZero Setup 1.0.0.exe` (Installer requiring admin elevation)
-- `release/AgentZero 1.0.0.exe` (Standalone Portable Executable)
-- `python/dist/scanner.exe` (Standalone CLI scanner)
+This re-compiles the React frontend, packages the Electron shell, bundles the Python engine, and builds the `.dmg` installer in `release/`.

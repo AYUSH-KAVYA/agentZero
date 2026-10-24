@@ -48,6 +48,9 @@ yarn-error.log*
 reports/*.pdf
 reports/*.html
 
+# Local-only files (not committed to remote)
+LOCAL_SYSTEM_BLUEPRINT.md
+
 # PyInstaller
 python/dist/
 python/build/

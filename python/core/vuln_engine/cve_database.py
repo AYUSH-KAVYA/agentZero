@@ -132,6 +132,25 @@ class CVEDatabase:
                     if in_range:
                         is_match = True
 
+            # macOS version check
+            max_ver = conds.get("max_version")
+            min_ver = conds.get("min_version")
+            curr_ver = os_info.get("productversion") or os_info.get("os_version")
+            if curr_ver and (max_ver or min_ver):
+                try:
+                    def vtuple(v):
+                        return tuple(int(x) for x in v.split(".") if x.isdigit())
+                    c_t = vtuple(curr_ver)
+                    in_v_range = True
+                    if min_ver and c_t < vtuple(min_ver):
+                        in_v_range = False
+                    if max_ver and c_t > vtuple(max_ver):
+                        in_v_range = False
+                    if in_v_range:
+                        is_match = True
+                except Exception:
+                    pass
+
             # Services check
             aff_services = conds.get("services", [])
             if aff_services and services_running:

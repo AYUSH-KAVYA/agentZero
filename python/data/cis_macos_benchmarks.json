@@ -1,0 +1,162 @@
+{
+  "version": "1.0.0",
+  "benchmark_name": "CIS Apple macOS 14 Sonoma & 15 Sequoia Benchmark",
+  "rules": [
+    {
+      "id": "CIS-1.1",
+      "category": "Software Updates",
+      "module": "ms_updates",
+      "title": "Ensure 'Check for Software Updates' is Enabled",
+      "check_key": "automatic_check",
+      "operator": "eq",
+      "target_value": true,
+      "severity": "high",
+      "description": "Background software update checks ensure zero-day vulnerabilities and Rapid Security Responses are received promptly.",
+      "remediation": "Enable automatic updates via 'sudo softwareupdate --schedule on'."
+    },
+    {
+      "id": "CIS-2.1",
+      "category": "Storage Security",
+      "module": "dotnet_versions",
+      "title": "Ensure FileVault 2 Full Disk Encryption is Enabled",
+      "check_key": "filevault_enabled",
+      "operator": "eq",
+      "target_value": true,
+      "severity": "critical",
+      "description": "FileVault secures the APFS startup container by encrypting all user data and system caches at rest.",
+      "remediation": "Enable FileVault in System Settings > Privacy & Security or run 'sudo fdesetup enable'."
+    },
+    {
+      "id": "CIS-2.2",
+      "category": "System Integrity",
+      "module": "amsi_providers",
+      "title": "Ensure System Integrity Protection (SIP) is Enabled",
+      "check_key": "sip_enabled",
+      "operator": "eq",
+      "target_value": true,
+      "severity": "critical",
+      "description": "System Integrity Protection locks critical directories (/System, /usr, /bin) and disallows unauthorized dtrace/kext loading.",
+      "remediation": "Boot into Recovery Mode and run 'csrutil enable' in Terminal."
+    },
+    {
+      "id": "CIS-2.3",
+      "category": "Code Signing & Malware Protection",
+      "module": "defender",
+      "title": "Ensure Gatekeeper Assessments are Enabled",
+      "check_key": "gatekeeper_enabled",
+      "operator": "eq",
+      "target_value": true,
+      "severity": "critical",
+      "description": "Gatekeeper validates Developer ID code signatures and Apple notarization before binary execution.",
+      "remediation": "Enable Gatekeeper assessments via 'sudo spctl --master-enable'."
+    },
+    {
+      "id": "CIS-2.4",
+      "category": "Network Security",
+      "module": "firewall",
+      "title": "Ensure macOS Application Firewall is Enabled",
+      "check_key": "firewall_enabled",
+      "operator": "eq",
+      "target_value": true,
+      "severity": "high",
+      "description": "The application firewall monitors and blocks incoming connections to non-whitelisted sockets and daemons.",
+      "remediation": "Enable firewall via 'sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on'."
+    },
+    {
+      "id": "CIS-2.5",
+      "category": "Network Security",
+      "module": "firewall",
+      "title": "Ensure Firewall Stealth Mode is Enabled",
+      "check_key": "stealth_mode",
+      "operator": "eq",
+      "target_value": true,
+      "severity": "low",
+      "description": "Stealth mode prevents disclosure of host existence by dropping ICMP probes and TCP reset responses.",
+      "remediation": "Enable stealth mode via 'sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on'."
+    },
+    {
+      "id": "CIS-2.6",
+      "category": "Remote Access",
+      "module": "rdp_settings",
+      "title": "Ensure Remote Login (SSH) is Disabled When Not in Use",
+      "check_key": "remote_login_enabled",
+      "operator": "eq",
+      "target_value": false,
+      "severity": "medium",
+      "description": "Running an open SSH daemon without strict key-only controls exposes the host to network brute-force attacks.",
+      "remediation": "Disable Remote Login via 'sudo systemsetup -setremotelogin off'."
+    },
+    {
+      "id": "CIS-2.7",
+      "category": "Remote Access",
+      "module": "rdp_sessions",
+      "title": "Ensure Screen Sharing / VNC Service is Disabled",
+      "check_key": "screen_sharing_active",
+      "operator": "eq",
+      "target_value": false,
+      "severity": "high",
+      "description": "VNC listening sockets (TCP 5900) allow remote graphical access and can be intercepted if unencrypted.",
+      "remediation": "Turn off Screen Sharing in System Settings > General > Sharing."
+    },
+    {
+      "id": "CIS-2.8",
+      "category": "Remote Access",
+      "module": "rdp_connections",
+      "title": "Ensure Remote Apple Events is Disabled",
+      "check_key": "remote_apple_events",
+      "operator": "eq",
+      "target_value": false,
+      "severity": "high",
+      "description": "Remote Apple Events enables network-wide execution of AppleScript and automation commands.",
+      "remediation": "Disable Remote Apple Events via 'sudo systemsetup -setremoteappleevents off'."
+    },
+    {
+      "id": "CIS-3.1",
+      "category": "User & Account Security",
+      "module": "local_users",
+      "title": "Ensure Guest Account is Disabled",
+      "check_key": "guest_enabled",
+      "operator": "eq",
+      "target_value": false,
+      "severity": "medium",
+      "description": "The Guest account allows untrusted physical users to log into temporary local sessions.",
+      "remediation": "Disable Guest account in System Settings > Users & Groups."
+    },
+    {
+      "id": "CIS-3.2",
+      "category": "User & Account Security",
+      "module": "uac_policies",
+      "title": "Ensure Root Account Direct Login is Disabled",
+      "check_key": "root_enabled",
+      "operator": "eq",
+      "target_value": false,
+      "severity": "medium",
+      "description": "The root superuser account should remain disabled; administrative tasks should use sudo instead.",
+      "remediation": "Disable root account via 'sudo dsenableroot -d'."
+    },
+    {
+      "id": "CIS-4.1",
+      "category": "Auditing & Logging",
+      "module": "audit_policy",
+      "title": "Ensure OpenBSM Audit Configuration is Present",
+      "check_key": "audit_control_present",
+      "operator": "eq",
+      "target_value": true,
+      "severity": "medium",
+      "description": "Audit daemon configuration controls kernel-level security event logging and forensic trail retention.",
+      "remediation": "Restore standard audit_control configuration in /etc/security/audit_control."
+    },
+    {
+      "id": "CIS-4.2",
+      "category": "Platform Security",
+      "module": "secure_boot",
+      "title": "Ensure Secure Boot Policy is Enforced Without Unsafe Flags",
+      "check_key": "secure_boot_enforced",
+      "operator": "eq",
+      "target_value": true,
+      "severity": "critical",
+      "description": "Boot arguments must not contain debug flags that turn off AMFI or code signature verification.",
+      "remediation": "Clear boot arguments using 'sudo nvram -d boot-args'."
+    }
+  ]
+}

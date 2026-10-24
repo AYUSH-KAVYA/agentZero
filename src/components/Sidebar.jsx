@@ -1,43 +1,28 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useScan } from '../context/ScanContext';
+import { LayoutDashboard, Server, Network, Bug, Shield, CheckCircle2, UserCheck } from 'lucide-react';
 
 const navItems = [
   {
     path: '/',
     label: 'Dashboard',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-      </svg>
-    ),
+    icon: LayoutDashboard,
   },
   {
     path: '/system',
-    label: 'System Scan',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
+    label: 'System Audit',
+    icon: Server,
   },
   {
     path: '/network',
-    label: 'Network Scan',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-      </svg>
-    ),
+    label: 'Network Recon',
+    icon: Network,
   },
   {
     path: '/vulnerabilities',
     label: 'Vulnerabilities',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
-    ),
+    icon: Bug,
   },
 ];
 
@@ -45,63 +30,76 @@ export default function Sidebar() {
   const { isScanning, isAdmin } = useScan();
 
   return (
-    <aside className="w-64 bg-cyber-card border-r border-cyber-border flex flex-col">
-      {/* Logo */}
-      <div className="p-6 border-b border-cyber-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-cyber-accent/20 flex items-center justify-center">
-            <svg className="w-6 h-6 text-cyber-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-white">AgentZero</h1>
-            <p className="text-xs text-gray-500">Vulnerability Scanner</p>
+    <aside className="w-64 bg-slate-950/80 backdrop-blur-2xl border-r border-white/10 flex flex-col justify-between select-none">
+      {/* Brand Logo Header */}
+      <div>
+        <div className="p-6 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400/20 via-blue-500/20 to-indigo-600/30 border border-sky-400/40 flex items-center justify-center shadow-lg shadow-sky-500/10">
+              <Shield className="w-5 h-5 text-sky-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-lg font-bold text-white tracking-tight">AgentZero</h1>
+                <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30">
+                  v1.0.1
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 font-medium">macOS Security Scanner</p>
+            </div>
           </div>
         </div>
+
+        {/* Navigation Items */}
+        <nav className="p-4 space-y-1.5">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-sky-500/20 to-blue-600/10 text-sky-300 border border-sky-400/30 shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+                  }`
+                }
+              >
+                <Icon className="w-4 h-4" />
+                {item.label}
+              </NavLink>
+            );
+          })}
+        </nav>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === '/'}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? 'bg-cyber-accent/10 text-cyber-accent border border-cyber-accent/20'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`
-            }
-          >
-            {item.icon}
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Status Footer */}
-      <div className="p-4 border-t border-cyber-border space-y-3">
-        {/* Scanning indicator */}
+      {/* Footer Status Panel */}
+      <div className="p-4 border-t border-white/10 space-y-3 bg-slate-950/40">
+        {/* Scanning Pulse */}
         {isScanning && (
-          <div className="flex items-center gap-2 text-xs text-cyber-accent scan-pulse p-2 rounded-md bg-cyber-accent/5 border border-cyber-accent/20">
-            <div className="w-2 h-2 rounded-full bg-cyber-accent animate-pulse" />
-            Scanning...
+          <div className="flex items-center gap-2 text-xs text-sky-300 p-2.5 rounded-xl bg-sky-500/10 border border-sky-400/30 scan-pulse">
+            <div className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
+            <span className="font-semibold">Audit Engine Running...</span>
           </div>
         )}
 
-        {/* Admin status */}
-        <div className="flex items-center gap-2 text-xs">
-          <div className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-green-500' : 'bg-yellow-500'}`} />
-          <span className={isAdmin ? 'text-green-400' : 'text-yellow-400'}>
-            {isAdmin ? 'Administrator' : 'Standard User'}
+        {/* Privilege Indicator */}
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-white/5 text-xs">
+          <span className="text-slate-400 flex items-center gap-1.5">
+            <UserCheck className="w-3.5 h-3.5 text-sky-400" />
+            User Level
+          </span>
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+            isAdmin ? 'bg-sky-500/20 text-sky-300 border border-sky-400/30' : 'bg-slate-800 text-slate-300'
+          }`}>
+            {isAdmin ? 'ROOT ADMIN' : 'STANDARD'}
           </span>
         </div>
 
-        <p className="text-[10px] text-gray-600 text-center">
-          AgentZero v1.0.0 • NTRO
+        <p className="text-[10px] text-slate-500 text-center font-mono">
+          AgentZero v1.0.1 • Apple macOS
         </p>
       </div>
     </aside>

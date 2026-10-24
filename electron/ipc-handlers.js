@@ -13,7 +13,10 @@ let mainWindowRef = null;
  */
 function getScannerPath() {
   if (app.isPackaged) {
-    return path.join(process.resourcesPath, 'scanner.exe');
+    if (process.platform === 'win32') {
+      return path.join(process.resourcesPath, 'scanner.exe');
+    }
+    return path.join(process.resourcesPath, 'python', 'main.py');
   }
   // Development mode — run Python directly
   return null; // Will use python interpreter
@@ -25,7 +28,7 @@ function getScannerPath() {
  */
 function runScanner(scanType, options = {}) {
   return new Promise((resolve, reject) => {
-    const scannerExe = getScannerPath();
+    const scannerPath = getScannerPath();
     let proc;
 
     const args = ['--scan-type', scanType, '--output-format', 'json'];
@@ -33,14 +36,17 @@ function runScanner(scanType, options = {}) {
     if (options.ipRange) {
       args.push('--ip-range', options.ipRange);
     }
+    if (options.format) {
+      args.push('--report-format', options.format);
+    }
 
-    if (scannerExe) {
-      // Production: use bundled .exe
-      proc = spawn(scannerExe, args, { windowsHide: true });
+    if (app.isPackaged && process.platform === 'win32' && scannerPath && scannerPath.endsWith('.exe')) {
+      // Production on Windows: use bundled .exe
+      proc = spawn(scannerPath, args, { windowsHide: true });
     } else {
-      // Development: use python interpreter (python3 on Unix, python on Windows)
+      // Packaged on macOS/Linux or Development mode: use python interpreter
       const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-      const pythonScript = path.join(__dirname, '..', 'python', 'main.py');
+      const pythonScript = scannerPath || path.join(__dirname, '..', 'python', 'main.py');
       proc = spawn(pythonCmd, [pythonScript, ...args], {
         windowsHide: true,
         env: { ...process.env },

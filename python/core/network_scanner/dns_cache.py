@@ -1,61 +1,43 @@
 """
-DNS Client Cache Scanner
-========================
-Extracts cached DNS query records to detect recent host communication,
-C2 domain lookups, and suspicious external resolutions.
+macOS DNS Resolvers & Configuration Scanner
+Audits macOS DNS nameservers, search domains, and resolver configurations via scutil --dns.
 """
-
-import platform
 import subprocess
-import json
-from typing import Dict, Any, List
-
+import re
+from typing import Dict, Any
 
 def scan(ip_range: str = None) -> Dict[str, Any]:
-    """Retrieves cached DNS resolution records."""
     result = {
-        "category": "DNS Client Cache",
+        "category": "DNS Resolvers & Configuration",
         "status": "info",
         "data": [],
         "findings": []
     }
-
     records = []
 
-    if platform.system() == "Windows":
-        cmd = [
-            "powershell", "-NoProfile", "-NonInteractive", "-Command",
-            "Get-DnsClientCache | Select-Object Entry, Name, Type, Status, TimeToLive, Data | ConvertTo-Json -Depth 2"
-        ]
-        try:
-            p = subprocess.run(cmd, capture_output=True, text=True, timeout=12)
-            if p.returncode == 0 and p.stdout.strip():
-                parsed = json.loads(p.stdout)
-                if isinstance(parsed, dict):
-                    parsed = [parsed]
-                for item in parsed:
-                    records.append({
-                        "entry": item.get("Entry"),
-                        "name": item.get("Name"),
-                        "type": item.get("Type"),
-                        "data": item.get("Data"),
-                        "ttl": item.get("TimeToLive")
-                    })
-        except Exception:
-            pass
+    try:
+        res = subprocess.run(["scutil", "--dns"], capture_output=True, text=True, timeout=5)
+        if res.returncode == 0:
+            current_resolver = {}
+            for line in res.stdout.splitlines():
+                line = line.strip()
+                if line.startswith("resolver #"):
+                    if current_resolver:
+                        records.append(current_resolver)
+                    current_resolver = {"resolver": line}
+                elif "nameserver[" in line and ":" in line:
+                    ns = line.split(":", 1)[1].strip()
+                    current_resolver.setdefault("nameservers", []).append(ns)
+                    # Check for unencrypted or suspicious DNS
+                    if ns in ["8.8.8.8", "1.1.1.1"]:
+                        pass
+                elif "domain" in line and ":" in line:
+                    current_resolver["domain"] = line.split(":", 1)[1].strip()
 
-    result["data"] = records
+            if current_resolver:
+                records.append(current_resolver)
+    except Exception as e:
+        result["error"] = str(e)
 
-    # Look for high-risk TLDs or suspicious dynamic DNS
-    suspicious_tlds = [".top", ".xyz", ".buzz", ".cc", ".tk", ".onion"]
-    for rec in records:
-        name = str(rec.get("name") or rec.get("entry") or "").lower()
-        if any(name.endswith(tld) for tld in suspicious_tlds):
-            result["findings"].append({
-                "severity": "medium",
-                "title": f"Suspicious High-Risk Domain in DNS Cache: {name}",
-                "description": f"Host recently resolved {name}, which uses a high-risk or commonly abused top-level domain.",
-                "remediation": "Check proxy and firewall egress logs to inspect connection timestamps and destination IP addresses."
-            })
-
+    result["data"] = records[:10]
     return result

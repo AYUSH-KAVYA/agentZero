@@ -1,54 +1,38 @@
 """
-Windows Network Profiles Scanner
-================================
-Audits network connection profiles (Public, Private, DomainAuthenticated)
-to ensure firewall isolation policies match connected network security zones.
+macOS Network Services & Profiles Scanner
+Audits configured network services (Wi-Fi, Ethernet, Thunderbolt) via networksetup and scutil.
 """
-
-import platform
 import subprocess
-import json
+import re
 from typing import Dict, Any
 
-
 def scan(ip_range: str = None) -> Dict[str, Any]:
-    """Audits active Windows network connection profiles."""
     result = {
-        "category": "Windows Network Profiles",
+        "category": "macOS Network Services",
         "status": "info",
         "data": [],
         "findings": []
     }
+    services = []
 
-    profiles = []
+    try:
+        res = subprocess.run(["networksetup", "-listallnetworkservices"], capture_output=True, text=True, timeout=5)
+        if res.returncode == 0:
+            for line in res.stdout.splitlines():
+                line = line.strip()
+                if line and not line.startswith("An asterisk") and not line.startswith("*"):
+                    services.append({"name": line, "status": "configured"})
+    except Exception as e:
+        result["error"] = str(e)
 
-    if platform.system() == "Windows":
-        cmd = [
-            "powershell", "-NoProfile", "-NonInteractive", "-Command",
-            "Get-NetConnectionProfile | Select-Object Name, InterfaceAlias, NetworkCategory, IPv4Connectivity, DomainAuthenticationSucceeded | ConvertTo-Json -Depth 2"
-        ]
-        try:
-            p = subprocess.run(cmd, capture_output=True, text=True, timeout=12)
-            if p.returncode == 0 and p.stdout.strip():
-                parsed = json.loads(p.stdout)
-                if isinstance(parsed, dict):
-                    parsed = [parsed]
-                profiles = parsed
-        except Exception:
-            pass
+    # Check Wi-Fi network name if available
+    try:
+        wifi = subprocess.run(["networksetup", "-getairportnetwork", "en0"], capture_output=True, text=True, timeout=5)
+        if wifi.returncode == 0 and "Current Wi-Fi Network:" in wifi.stdout:
+            ssid = wifi.stdout.replace("Current Wi-Fi Network:", "").strip()
+            services.append({"name": "Active Wi-Fi SSID", "ssid": ssid})
+    except Exception:
+        pass
 
-    result["data"] = profiles
-
-    for prof in profiles:
-        cat = str(prof.get("NetworkCategory", ""))
-        alias = prof.get("InterfaceAlias", "Unknown")
-        # If connected to a network configured as "Private" on an interface with public gateway
-        if cat == "Private" and not prof.get("DomainAuthenticationSucceeded", False):
-            result["findings"].append({
-                "severity": "low",
-                "title": f"Interface {alias} Configured as 'Private' Network Category",
-                "description": f"Interface {alias} is operating under the 'Private' firewall category without verified domain authentication. This broadens local discovery and inbound firewall openings.",
-                "remediation": "Switch untrusted or guest interfaces to 'Public' using Set-NetConnectionProfile -InterfaceAlias <alias> -NetworkCategory Public."
-            })
-
+    result["data"] = services
     return result

@@ -26,12 +26,12 @@ from .diagram_generator import NetworkDiagramGenerator
 MODULES = [
     {"key": "interfaces", "module": interfaces, "label": "System Interface Connectors"},
     {"key": "arp_table", "module": arp_table, "label": "ARP Table & Adapter Info"},
-    {"key": "dns_cache", "module": dns_cache, "label": "DNS Cache Entries"},
-    {"key": "network_profiles", "module": network_profiles, "label": "Windows Network Profiles"},
-    {"key": "network_shares", "module": network_shares, "label": "Exposed Network Shares"},
-    {"key": "connections", "module": connections, "label": "Active TCP/UDP Sockets"},
-    {"key": "rpc_endpoints", "module": rpc_endpoints, "label": "RPC Endpoints Mapped"},
-    {"key": "open_ports", "module": open_ports, "label": "Open Ports Status"},
+    {"key": "dns_cache", "module": dns_cache, "label": "DNS Cache & Resolvers"},
+    {"key": "network_profiles", "module": network_profiles, "label": "macOS Network Services & Profiles"},
+    {"key": "network_shares", "module": network_shares, "label": "Mounted & Shared File Systems"},
+    {"key": "connections", "module": connections, "label": "Active TCP Sockets"},
+    {"key": "rpc_endpoints", "module": rpc_endpoints, "label": "Bonjour & Network Services"},
+    {"key": "open_ports", "module": open_ports, "label": "Listening Ports & Services"},
     {"key": "lldp_cdp", "module": lldp_cdp, "label": "LLDP/CDP Infrastructure"},
     {"key": "vlan_devices", "module": vlan_devices, "label": "Attached VLAN Vectors"},
 ]

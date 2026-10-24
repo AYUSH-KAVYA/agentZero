@@ -10,82 +10,173 @@
   }
 
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background-color: #060911;
-    color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Text', system-ui, sans-serif;
+    background-color: #070b14;
+    color: #f1f5f9;
     overflow: hidden;
     -webkit-app-region: no-drag;
     user-select: none;
+    background-image: 
+      radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(37, 99, 235, 0.08) 0%, transparent 40%);
   }
 
-  /* Custom scrollbar */
+  /* Custom macOS-style scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #111827;
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #374151;
-    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #4b5563;
+    background: rgba(255, 255, 255, 0.25);
   }
 }
 
 @layer components {
+  /* Frosted Glass & Skeuomorphic Cards */
   .cyber-card {
-    @apply bg-cyber-card border border-cyber-border rounded-lg p-4;
+    background: linear-gradient(180deg, rgba(17, 27, 46, 0.75) 0%, rgba(10, 16, 28, 0.85) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 1.25rem;
   }
 
+  .skeuo-card {
+    background: linear-gradient(180deg, #131e33 0%, #0a1120 100%);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+  }
+
+  .glass-panel {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Tactile / Skeuomorphic Buttons */
   .cyber-btn {
-    @apply px-4 py-2 rounded-md font-medium transition-all duration-200;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
   }
 
   .cyber-btn-primary {
-    @apply cyber-btn bg-cyber-accent text-cyber-dark hover:bg-green-400 active:scale-95;
+    @apply cyber-btn;
+    background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-top: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
-  .cyber-btn-danger {
-    @apply cyber-btn bg-cyber-danger text-white hover:bg-red-500 active:scale-95;
+  .cyber-btn-primary:hover:not(:disabled) {
+    background: linear-gradient(180deg, #7dd3fc 0%, #0369a1 100%);
+    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+  }
+
+  .cyber-btn-primary:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
   }
 
   .cyber-btn-secondary {
-    @apply cyber-btn bg-cyber-border text-gray-300 hover:bg-gray-600 active:scale-95;
+    @apply cyber-btn;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   }
 
+  .cyber-btn-secondary:hover:not(:disabled) {
+    background: linear-gradient(180deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.95) 100%);
+    color: #ffffff;
+    border-color: rgba(56, 189, 248, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .cyber-btn-danger {
+    @apply cyber-btn;
+    background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  /* Polished Status Badges */
   .status-badge {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.2rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
   }
 
   .status-pass {
-    @apply status-badge bg-green-500/20 text-green-400 border border-green-500/30;
+    @apply status-badge;
+    background: rgba(14, 165, 233, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
   }
 
   .status-warn {
-    @apply status-badge bg-yellow-500/20 text-yellow-400 border border-yellow-500/30;
+    @apply status-badge;
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
   }
 
   .status-fail {
-    @apply status-badge bg-red-500/20 text-red-400 border border-red-500/30;
+    @apply status-badge;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
   }
 
   .status-info {
-    @apply status-badge bg-blue-500/20 text-blue-400 border border-blue-500/30;
+    @apply status-badge;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
   }
 
-  /* Glow animation for active scan */
+  /* Ambient Scan Pulse */
   .scan-pulse {
-    animation: scanPulse 2s ease-in-out infinite;
+    animation: blueScanPulse 2s ease-in-out infinite;
   }
 
-  @keyframes scanPulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
-    50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
+  @keyframes blueScanPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.25), inset 0 0 4px rgba(56, 189, 248, 0.1); }
+    50% { box-shadow: 0 0 24px rgba(56, 189, 248, 0.55), inset 0 0 10px rgba(56, 189, 248, 0.2); }
   }
 }

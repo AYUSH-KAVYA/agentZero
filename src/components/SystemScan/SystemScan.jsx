@@ -76,7 +76,7 @@ export default function SystemScan() {
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">System Security Audits</h2>
           <p className="text-xs text-gray-400 mt-1">
-            26 dedicated OS subsystem categories evaluating AMSI, Defender, UAC, Registry, and Credentials
+            26 dedicated macOS audit vectors evaluating SIP, FileVault, Gatekeeper, LaunchDaemons, TCC, and SUID Permissions
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export default function SystemScan() {
           disabled={isScanning}
           className="cyber-btn-primary text-xs flex items-center gap-2 self-start md:self-auto disabled:opacity-50"
         >
-          {isScanning ? 'Auditing Windows...' : '▶ Audit System'}
+          {isScanning ? 'Auditing macOS...' : '▶ Audit System'}
         </button>
       </div>
 

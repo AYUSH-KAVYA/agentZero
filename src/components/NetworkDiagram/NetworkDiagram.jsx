@@ -6,18 +6,18 @@ export default function NetworkDiagram({ topologyData }) {
   const [filterType, setFilterType] = useState('all');
 
   const defaultNodes = [
-    { id: 'host', label: 'Local Windows Host', ip: '192.168.1.105', type: 'target', status: 'warning', role: 'Audit Target', x: 400, y: 220 },
-    { id: 'gw', label: 'Default Gateway Router', ip: '192.168.1.1', type: 'router', status: 'normal', role: 'Cisco Core Switch', x: 150, y: 100 },
-    { id: 'dc', label: 'Domain Controller (DC01)', ip: '192.168.1.20', type: 'server', status: 'normal', role: 'Active Directory / DNS', x: 650, y: 100 },
-    { id: 'nas', label: 'Storage NAS', ip: '192.168.1.45', type: 'storage', status: 'normal', role: 'SMB File Server', x: 650, y: 340 },
-    { id: 'client', label: 'VLAN Workstation', ip: '192.168.1.150', type: 'client', status: 'active', role: 'Inbound RDP Client', x: 150, y: 340 },
+    { id: 'host', label: 'Local macOS Host (MacBook)', ip: '10.254.207.3', type: 'target', status: 'warning', role: 'Audit Target', x: 400, y: 220 },
+    { id: 'gw', label: 'Default Gateway Router', ip: '10.254.200.1', type: 'router', status: 'normal', role: 'Subnet Gateway', x: 150, y: 100 },
+    { id: 'dc', label: 'DNS / Directory Node', ip: '1.1.1.1', type: 'server', status: 'normal', role: 'Cloudflare DNS :53', x: 650, y: 100 },
+    { id: 'nas', label: 'Storage NAS', ip: '10.254.200.45', type: 'storage', status: 'normal', role: 'SMB/NFS Server', x: 650, y: 340 },
+    { id: 'client', label: 'Local Network Peer', ip: '10.254.200.58', type: 'client', status: 'active', role: 'SSH Client :22', x: 150, y: 340 },
   ];
 
   const defaultLinks = [
     { source: 'host', target: 'gw', label: 'Default Route / ARP', active: true },
-    { source: 'host', target: 'dc', label: 'Kerberos :88 / DNS :53', active: true },
+    { source: 'host', target: 'dc', label: 'HTTPS :443 / DNS :53', active: true },
     { source: 'host', target: 'nas', label: 'SMB Share :445', active: false },
-    { source: 'client', target: 'host', label: 'RDP :3389 [ESTABLISHED]', active: true },
+    { source: 'client', target: 'host', label: 'SSH :22 [ESTABLISHED]', active: true },
   ];
 
   const nodes = topologyData?.topology_nodes?.map((n, idx) => {
@@ -98,8 +98,8 @@ export default function NetworkDiagram({ topologyData }) {
         <svg className="absolute inset-0 w-full h-full pointer-events-none">
           <defs>
             <linearGradient id="cyberLine" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00ff88" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.8" />
+              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#2563eb" stopOpacity="0.8" />
             </linearGradient>
           </defs>
           {links.map((link, idx) => {
@@ -119,8 +119,8 @@ export default function NetworkDiagram({ topologyData }) {
                 <circle
                   cx={(src.x + tgt.x) / 2}
                   cy={(src.y + tgt.y) / 2}
-                  r="3"
-                  fill="#00ff88"
+                  r="3.5"
+                  fill="#38bdf8"
                   className={link.active ? 'animate-pulse' : 'hidden'}
                 />
               </g>

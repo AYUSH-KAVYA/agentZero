@@ -43,7 +43,7 @@ class HTMLReportGenerator:
             "hostname": (
                 scan_results.get("system", {}).get("modules", {}).get("os_info", {}).get("data", {}).get("hostname")
                 or scan_results.get("hostname")
-                or "Windows-Host"
+                or "macOS-Host"
             ),
             "summary": self._compute_summary(scan_results),
             "system_results": scan_results.get("system") or (scan_results if "modules" in scan_results and "os_info" in scan_results.get("modules", {}) else None),
@@ -113,7 +113,7 @@ class HTMLReportGenerator:
     <header class="report-header">
         <div>
             <h1>🛡️ AgentZero Security Report</h1>
-            <p>Agent-less Windows Vulnerability and Network Scanner</p>
+            <p>Agent-less macOS Vulnerability and Network Scanner</p>
         </div>
         <div class="scan-meta">
             <p><strong>Host:</strong> {h_name}</p>

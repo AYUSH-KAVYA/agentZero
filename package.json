@@ -1,7 +1,7 @@
 {
   "name": "agent-zero",
-  "version": "1.0.0",
-  "description": "Agent-less Windows System Vulnerability & Network Scanner",
+  "version": "1.0.1",
+  "description": "Agent-less macOS System Vulnerability & Network Security Scanner",
   "main": "electron/main.js",
   "author": "AYUSH-KAVYA",
   "license": "MIT",
@@ -16,6 +16,8 @@
     "build": "vite build",
     "build:python": "cd python && pyinstaller --onefile --clean --name scanner --add-data \"data;data\" --add-data \"report/templates;report/templates\" main.py",
     "build:electron": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac --arm64",
+    "build:dmg": "npm run build && electron-builder --mac dmg --arm64",
     "preview": "vite preview",
     "lint": "eslint src/ --ext .js,.jsx",
     "format": "prettier --write \"src/**/*.{js,jsx,css,md}\""
@@ -46,23 +48,72 @@
   "build": {
     "appId": "com.agentzero.scanner",
     "productName": "AgentZero",
+    "compression": "maximum",
+    "electronLanguages": ["en"],
     "directories": {
       "output": "release"
     },
     "win": {
       "target": ["nsis", "portable"],
       "icon": "assets/icon.ico",
-      "requestedExecutionLevel": "requireAdministrator"
+      "requestedExecutionLevel": "requireAdministrator",
+      "extraResources": [
+        {
+          "from": "python/dist/scanner.exe",
+          "to": "scanner.exe"
+        }
+      ]
     },
-    "extraResources": [
-      {
-        "from": "python/dist/scanner.exe",
-        "to": "scanner.exe"
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64"]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.developer-tools",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "extraResources": [
+        {
+          "from": "python",
+          "to": "python",
+          "filter": [
+            "**/*",
+            "!**/__pycache__/**",
+            "!**/.pytest_cache/**",
+            "!**/venv/**"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "title": "AgentZero ${version}",
+      "icon": "assets/icon.icns",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
       }
-    ],
+    },
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "assets/icon.png",
+      "assets/icon.icns"
     ]
   }
 }

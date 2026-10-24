@@ -16,7 +16,7 @@ export default function NetworkScan() {
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">Network Reconnaissance & Vectors</h2>
           <p className="text-xs text-gray-400 mt-1">
-            Maps VLAN attached vectors, open RPC endpoints, active socket connections, and exposed shares
+            Maps local subnet vectors, Bonjour & mDNS services, active sockets, and mounted shares
           </p>
         </div>
 
@@ -85,15 +85,19 @@ export default function NetworkScan() {
                 <tbody className="divide-y divide-cyber-border text-gray-300">
                   {modules.open_ports.data.map((p, idx) => (
                     <tr key={idx} className="hover:bg-white/5 transition-colors">
-                      <td className="p-3 font-mono font-bold text-cyber-accent">{p.port}</td>
-                      <td className="p-3 font-mono">{p.protocol}</td>
+                      <td className="p-3 font-mono font-bold text-cyber-accent">
+                        {p.port || (p.address && p.address.includes(':') ? p.address.split(':').pop() : '—')}
+                      </td>
+                      <td className="p-3 font-mono">{p.protocol || p.type || 'TCP'}</td>
                       <td className="p-3">
                         <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          {p.state}
+                          {p.state || 'LISTEN'}
                         </span>
                       </td>
-                      <td className="p-3 font-medium text-white">{p.service}</td>
-                      <td className="p-3 font-mono text-gray-400">{p.process || 'Unknown'}</td>
+                      <td className="p-3 font-medium text-white">{p.service || p.command || 'Local Service'}</td>
+                      <td className="p-3 font-mono text-gray-400">
+                        {p.process || (p.command ? `${p.command} (PID ${p.pid})` : 'System')}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -131,19 +135,19 @@ export default function NetworkScan() {
                 <tbody className="divide-y divide-cyber-border text-gray-300 font-mono">
                   {modules.connections.data.map((c, idx) => (
                     <tr key={idx} className="hover:bg-white/5 transition-colors">
-                      <td className="p-3 text-cyan-400 font-bold">{c.proto}</td>
-                      <td className="p-3">{c.local}</td>
-                      <td className="p-3">{c.remote}</td>
+                      <td className="p-3 text-cyan-400 font-bold">{c.proto || 'TCP'}</td>
+                      <td className="p-3">{c.local || (c.connection && c.connection.includes('->') ? c.connection.split('->')[0] : (c.connection || '—'))}</td>
+                      <td className="p-3">{c.remote || (c.connection && c.connection.includes('->') ? c.connection.split('->')[1] : '—')}</td>
                       <td className="p-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] ${
-                          c.state === 'ESTABLISHED'
+                          (c.state === 'ESTABLISHED' || !c.state)
                             ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                             : 'bg-gray-500/20 text-gray-400'
                         }`}>
-                          {c.state}
+                          {c.state || 'ESTABLISHED'}
                         </span>
                       </td>
-                      <td className="p-3 text-gray-400">{c.process || c.pid}</td>
+                      <td className="p-3 text-gray-400">{c.process || (c.command ? `${c.command} (PID ${c.pid})` : c.pid || 'System')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -161,7 +165,7 @@ export default function NetworkScan() {
         <div className="cyber-card">
           <div className="flex items-center justify-between mb-4 border-b border-cyber-border pb-2">
             <h3 className="text-sm font-semibold text-white">ARP Cache & Neighbor Vectors</h3>
-            <span className="text-xs text-gray-400 font-mono">VLAN Devices</span>
+            <span className="text-xs text-gray-400 font-mono">Subnet Devices</span>
           </div>
 
           {modules.arp_table?.data ? (
@@ -172,7 +176,7 @@ export default function NetworkScan() {
                     <th className="p-3">IP Address</th>
                     <th className="p-3">MAC Address</th>
                     <th className="p-3">Device / Node Type</th>
-                    <th className="p-3">Hardware Vendor</th>
+                    <th className="p-3">Raw Record</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-cyber-border text-gray-300">
@@ -181,7 +185,7 @@ export default function NetworkScan() {
                       <td className="p-3 font-mono font-bold text-white">{a.ip}</td>
                       <td className="p-3 font-mono text-cyan-400">{a.mac}</td>
                       <td className="p-3">{a.type || 'Dynamic Neighbor'}</td>
-                      <td className="p-3 text-gray-400">{a.vendor || 'Unknown'}</td>
+                      <td className="p-3 text-gray-400 font-mono text-[11px] truncate max-w-xs">{a.raw || a.vendor || 'ARP Cache Entry'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -198,25 +202,25 @@ export default function NetworkScan() {
       {activeTab === 'shares' && (
         <div className="cyber-card">
           <div className="flex items-center justify-between mb-4 border-b border-cyber-border pb-2">
-            <h3 className="text-sm font-semibold text-white">Exposed Network Shares</h3>
-            <span className="text-xs text-gray-400 font-mono">SMB Endpoints</span>
+            <h3 className="text-sm font-semibold text-white">Mounted & Shared File Systems</h3>
+            <span className="text-xs text-gray-400 font-mono">SMB / NFS / AFP</span>
           </div>
 
-          {modules.network_shares?.data ? (
+          {modules.network_shares?.data && modules.network_shares.data.length > 0 ? (
             <div className="space-y-2.5">
               {modules.network_shares.data.map((s, idx) => (
                 <div key={idx} className="p-3 bg-cyber-dark rounded-lg border border-cyber-border flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-white font-mono">{s.name}</span>
-                    <p className="text-[11px] text-gray-400 font-mono mt-0.5">{s.path || 'Virtual Pipe'}</p>
+                    <span className="text-xs font-bold text-white font-mono">{s.name || s.mount_line || 'Mounted Volume'}</span>
+                    <p className="text-[11px] text-gray-400 font-mono mt-0.5">{s.path || s.mount_line || 'Network Mount'}</p>
                   </div>
-                  <span className="text-xs text-gray-400">{s.remark || 'Active Share'}</span>
+                  <span className="text-xs text-gray-400">{s.remark || 'Active Mount'}</span>
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-12 text-xs text-gray-500">
-              No network shares detected.
+              No remote network shares or mounted file systems detected.
             </div>
           )}
         </div>

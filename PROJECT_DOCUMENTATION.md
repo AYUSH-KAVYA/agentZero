@@ -1,8 +1,8 @@
 # 🛡️ AgentZero — Comprehensive Technical Manual & Architecture Guide
 
-> **Problem Statement 92:** Agent-less Windows System Vulnerability and Network Scanner  
+> **Project:** Agent-less macOS System Vulnerability and Network Scanner  
 > **Organisation:** National Technical Research Organisation (NTRO)  
-> **Domain / Technology Bucket:** Blockchain & Cybersecurity (Software)  
+> **Target Platform:** Apple macOS (Apple Silicon `arm64` & Intel `x64`, macOS Sonoma 14 / Sequoia 15)  
 > **Repository:** [https://github.com/AYUSH-KAVYA/agentZero.git](https://github.com/AYUSH-KAVYA/agentZero.git)
 
 ---
@@ -11,282 +11,163 @@
 1. [Executive Summary](#1-executive-summary)
 2. [Problem Statement & Background](#2-problem-statement--background)
 3. [Technical Architecture](#3-technical-architecture)
-4. [The "Agent-less" & AV/EDR Friendly Mechanism](#4-the-agent-less--avedr-friendly-mechanism)
+4. [The "Agent-less" Mechanism on macOS](#4-the-agent-less-mechanism-on-macos)
 5. [System-Level Audit Modules (26 Categories)](#5-system-level-audit-modules-26-categories)
 6. [Network-Level Reconnaissance Modules (10 Categories)](#6-network-level-reconnaissance-modules-10-categories)
-7. [Vulnerability Engine & Exploit Crawler](#7-vulnerability-engine--exploit-crawler)
+7. [Vulnerability Engine & Exploit Intelligence](#7-vulnerability-engine--exploit-intelligence)
 8. [Consolidated Reporting Subsystem (HTML & PDF)](#8-consolidated-reporting-subsystem-html--pdf)
 9. [Complete Tech Stack Breakdown](#9-complete-tech-stack-breakdown)
 10. [Local Development & Execution Guide](#10-local-development--execution-guide)
-11. [Standalone Windows Packaging Guide](#11-standalone-windows-packaging-guide)
-12. [Cloud Deployment on Vercel](#12-cloud-deployment-on-vercel)
+11. [Native macOS Desktop Packaging (.dmg)](#11-native-macos-desktop-packaging-dmg)
 
 ---
 
 ## 1. Executive Summary
 
-**AgentZero** is an on-demand, agent-less cybersecurity auditing tool developed for blue teams, system administrators, and security analysts. It evaluates the security posture of modern Windows 10 and Windows 11 subsystems without installing persistent background agents or services. 
+**AgentZero** is an on-demand, agent-less cybersecurity auditing desktop application developed for blue teams, system administrators, and security analysts evaluating macOS hosts. It audits the security posture of Apple macOS subsystems without requiring persistent background daemons or kernel extensions.
 
-When executed, it performs rapid, comprehensive OS-level queries, sweeps the local network broadcast domain, cross-references discovered parameters against an offline CVE database and the Center for Internet Security (CIS) benchmarks, crawls for weaponized open-source exploits and missing Microsoft KB patches, visualizes the network topology, and generates consolidated executive reports in HTML and PDF formats.
+When executed, it performs rapid, comprehensive OS-level checks (SIP, FileVault, Gatekeeper, Application Firewall, LaunchDaemons, TCC, SUID permissions), maps local network topology, cross-references host state against an offline macOS CVE database and CIS Apple macOS Benchmarks, identifies weaponized zero-day exploits (BLASTPASS, Operation Triangulation, XNU kernel vulnerabilities), renders an interactive SVG network topology diagram, and generates consolidated executive reports in HTML and PDF formats.
 
 ---
 
 ## 2. Problem Statement & Background
 
-Most enterprise and individual Windows users fail to update systems promptly or misconfigure critical defensive controls (e.g. disabling User Account Control prompts, granting broad antivirus exclusions, exposing unauthenticated RDP ports, or running outdated runtime environments). 
-
-The National Technical Research Organisation (NTRO) requires a solution that:
-- Operates in an **agent-less** manner without persistent daemons.
-- Operates in an **AV/EDR-friendly** manner without triggering heuristic behavioral blocks.
-- Audits deep system configuration parameters (Registry, WMI, PowerShell, Audit Policies, AMSI).
-- Audits the local network perimeter (interfaces, ARP cache, open ports, RPC endpoints, LLDP/CDP, VLAN vectors).
-- Correlates findings with known **CVEs**, **publicly available exploits (Exploit-DB, GitHub PoCs)**, and **Microsoft KB patches**.
-- Generates an **interactive network diagram** and consolidated **HTML/PDF reports**.
+Traditional vulnerability management agents are heavy, require continuous internet connectivity, and install intrusive background daemons. AgentZero fulfills the requirement for an **agent-less, on-demand auditing framework** that:
+- Runs natively on macOS Darwin without permanent installation
+- Leverages built-in management tools (`csrutil`, `fdesetup`, `spctl`, `socketfilterfw`, `dscl`, `scutil`, `lsof`)
+- Requires zero network calls to third-party cloud servers for offline air-gapped security audits
+- Distributes as a standalone macOS `.dmg` installer and `.app` bundle
 
 ---
 
 ## 3. Technical Architecture
 
-AgentZero employs a high-performance **hybrid desktop architecture** separating user interaction from low-level operating system queries:
-
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Electron Desktop Shell                      │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    React 18 + Vite UI                     │  │
-│  │  ┌───────────────┐ ┌───────────────┐ ┌─────────────────┐  │  │
-│  │  │Dashboard Gauge│ │System Audits  │ │Network Topology │  │  │
-│  │  └───────┬───────┘ └───────┬───────┘ └────────┬────────┘  │  │
-│  └──────────┼─────────────────┼──────────────────┼───────────┘  │
-│             └─────────────────┼──────────────────┘              │
-│                     contextBridge IPC Channel                   │
-│             ┌─────────────────┴──────────────────┐              │
-│             │    Electron Main (ipc-handlers.js) │              │
-│             └─────────────────┬──────────────────┘              │
-│                 child_process.spawn()                           │
-│             ┌─────────────────┴──────────────────┐              │
-│             │    Python Extraction Engine (.exe) │              │
-│             │  ┌──────────────┐ ┌──────────────┐ │              │
-│             │  │System Scanner│ │Net Recon     │ │              │
-│             │  │(26 Modules)  │ │(10 Modules)  │ │              │
-│             │  └──────┬───────┘ └──────┬───────┘ │              │
-│             │  ┌──────┴────────────────┴───────┐ │              │
-│             │  │ Vulnerability Engine & Crawler│ │              │
-│             │  └───────────────────────────────┘ │              │
-│             └────────────────────────────────────┘              │
-└─────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│               Electron Desktop Shell (macOS)           │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │             React 18 + Vite Cyber UI             │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌────────┐ ┌────────┐ │  │
+│  │  │Dashboard │ │SystemScan│ │Network │ │VulnScan│ │  │
+│  │  └────┬─────┘ └────┬─────┘ └───┬────┘ └───┬────┘ │  │
+│  └───────┼────────────┼───────────┼──────────┼──────┘  │
+│          └────────────┼───────────┼──────────┘          │
+│                 contextBridge IPC                       │
+│          ┌────────────┴───────────┴──────────┐          │
+│          │   Python 3 Standalone Engine      │          │
+│          │  ┌──────────┐ ┌─────────┐ ┌─────┐ │          │
+│          │  │System(26)│ │Net (10) │ │Vuln │ │          │
+│          │  └──────────┘ └─────────┘ └─────┘ │          │
+│          └───────────────────────────────────┘          │
+└────────────────────────────────────────────────────────┘
 ```
-
-- **Renderer Process (React 18, Tailwind CSS, Recharts, Lucide Icons)**: Provides an interactive cybersecurity command center, real-time animated scan progress bars, search/filter controls, and SVG network topology graphs.
-- **Main Process (`electron/main.js`, `electron/ipc-handlers.js`)**: Spawns the compiled Python engine silently in the background, streams live stderr diagnostic lines to the UI terminal drawer, and receives structured JSON payloads from stdout.
-- **Preload Bridge (`electron/preload.js`)**: Exposes an isolated, secure API to the renderer via `contextBridge`.
 
 ---
 
-## 4. The "Agent-less" & AV/EDR Friendly Mechanism
+## 4. The "Agent-less" Mechanism on macOS
 
-### Agent-less Operation
-Traditional security tools require an invasive agent service running continuously in the background, consuming CPU/RAM and creating potential supply-chain attack vectors. AgentZero is **on-demand**:
-- It requires no permanent background services, scheduled tasks, or driver installations.
-- It executes silently, extracts required telemetry via read-only Windows management interfaces, generates the audit report, and terminates cleanly.
-
-### AV/EDR Friendly Design
-To ensure modern Endpoint Detection and Response (EDR) solutions (such as Microsoft Defender for Endpoint, CrowdStrike, SentinelOne) do not flag the audit utility:
-- **No In-Memory Injection**: Avoids process hollowing, DLL unhooking, or shellcode execution.
-- **Native Administrative Protocols**: Uses Microsoft-approved protocols including Windows Management Instrumentation (WMI), COM (`Microsoft.Update.Session`), and native Winreg APIs.
-- **Constrained PowerShell Execution**: All invoked commands use `-NoProfile -NonInteractive` within the current process scope.
+Unlike persistent monitoring agents, AgentZero:
+- **No Background Daemon:** Does not install LaunchDaemons, LaunchAgents, or background services.
+- **Native OS Execution:** Executes read-only queries against macOS Darwin subsystems.
+- **Zero Third-Party Kernel Extensions:** Compatible with Apple Silicon Full Security mode.
+- **Air-Gapped Offline Operation:** Uses curated offline CVE datasets and CIS benchmark schemas stored locally.
 
 ---
 
 ## 5. System-Level Audit Modules (26 Categories)
 
-Located in `python/core/system_scanner/`:
-
-| Module | Subsystem Audited | Key Data Extracted & Security Checks |
-|---|---|---|
-| `os_info.py` | Basic OS Information | OS Edition, Build number, Architecture, Domain/Workgroup, Last boot, Uptime |
-| `dotnet_versions.py` | .NET Framework & Runtimes | Registry release DWORD mapping, .NET Core/5/6/7/8 runtimes & SDKs |
-| `amsi_providers.py` | Antimalware Scan Interface | Registered AMSI providers in registry, CLSID DLL resolution, bypass risk detection |
-| `antivirus.py` | Registered Antivirus Products | `root\SecurityCenter2` WMI, `productState` bitmask decoding (Real-time, Up-to-date) |
-| `audit_policy.py` | Classic & Advanced Audit Policy | `auditpol` queries, logon/logoff, privilege use, object access, account management |
-| `autorun.py` | Persistence & Auto-Run Programs | Registry Run/RunOnce, Startup directories, scheduled tasks, auto-start services |
-| `firewall.py` | Windows Firewall Rules | Domain/Private/Public profile status, overly permissive inbound "Allow Any" rules |
-| `defender.py` | Microsoft Defender Settings | Real-time, Cloud, Tamper Protection status, path/extension/process exclusions |
-| `certificates.py` | Personal & Machine Certificates | Machine/User `My` cert store, expiration dates, non-standard Root CAs, exportable private keys |
-| `environment.py` | Environment Variables & PATH | System & User PATH, detection of writable PATH directories (DLL hijacking), SDDL ACLs |
-| `file_listing.py` | User Directories Enumeration | Downloads, Documents, Desktop file listing, detection of risky scripts/binaries (`.ps1`, `.vbs`, `.exe`) |
-| `file_info.py` | Binary Version & Signatures | Version info and Authenticode digital signature validation for key system binaries |
-| `hotfixes.py` | Installed Hotfixes & KBs | WMI `Win32_QuickFixEngineering`, calculation of patch management lag in days |
-| `installed_products.py` | Installed Software Inventory | 32-bit & 64-bit Registry Uninstall keys, publishers, display versions |
-| `group_policy.py` | Local Group Policy | `gpresult` computer/user evaluation, minimum password length, lockout thresholds |
-| `local_groups.py` | Local Security Groups | Non-empty local groups, Administrator and Remote Desktop Users membership |
-| `local_users.py` | Local User Accounts | Active vs disabled accounts, password required flag, last logon timestamp |
-| `ms_updates.py` | Windows Updates via COM/WMI | `Microsoft.Update.Session` COM object queries, pending critical/security updates |
-| `ntlm_settings.py` | NTLM Authentication Policy | `LmCompatibilityLevel`, NTLM minimum client/server security, relay vulnerability check |
-| `rdp_connections.py` | Saved RDP Connections | Terminal Server Client registry keys, MRU servers list (lateral movement targets) |
-| `rdp_sessions.py` | Incoming RDP Sessions | Active vs disconnected incoming interactive sessions and mapped usernames |
-| `rdp_settings.py` | RDP Server Configuration | RDP listening port, Network Level Authentication (NLA) enforcement status |
-| `secure_boot.py` | Secure Boot & UEFI Configuration | `Confirm-SecureBootUEFI`, UEFI vs Legacy BIOS verification, bootloader security |
-| `sysmon.py` | Sysmon Configuration | Sysmon service status, driver presence, configuration hash tracking |
-| `uac_policies.py` | User Account Control Policies | `EnableLUA`, admin consent behavior (`ConsentPromptBehaviorAdmin`), secure desktop status |
-| `powershell_history.py` | PowerShell Console History | Scans `ConsoleHost_history.txt` with regex patterns for passwords, tokens, API keys, credentials |
+1. `os_info` — macOS Version (`sw_vers`), Kernel, Darwin release, Hardware Model (`sysctl hw.model`), Processor, Uptime.
+2. `dotnet_versions` — FileVault 2 Full Disk Encryption status (`fdesetup status`).
+3. `amsi_providers` — System Integrity Protection (SIP) state (`csrutil status`).
+4. `antivirus` — EDR & System Extensions (`systemextensionsctl list`).
+5. `audit_policy` — OpenBSM audit daemon flags (`/etc/security/audit_control`).
+6. `autorun` — LaunchDaemons persistence plists in `/Library/LaunchDaemons`.
+7. `firewall` — Application Firewall (`socketfilterfw --getglobalstate`, stealth mode).
+8. `defender` — Gatekeeper code signing enforcement (`spctl --status`) & XProtect definitions.
+9. `certificates` — Keychain Root Certificates in System Keychain (`security find-certificate`).
+10. `environment` — Environment variables and `$PATH` directory security.
+11. `file_listing` — Sensitive user key files (`~/.ssh`, permissions).
+12. `file_info` — SUID/SGID binaries across system directories.
+13. `hotfixes` — Rapid Security Responses (RSR) and macOS build version.
+14. `installed_products` — Installed applications in `/Applications` & Homebrew packages.
+15. `group_policy` — Configuration Profiles & MDM enrollment (`profiles status`).
+16. `local_groups` — Members of `admin` and `wheel` directory groups (`dscl`).
+17. `local_users` — Local directory users and Guest account status (`dscl`).
+18. `ms_updates` — Automatic software update background schedule (`softwareupdate --schedule`).
+19. `ntlm_settings` — Local account password policies (`pwpolicy`).
+20. `rdp_connections` — Remote Apple Events and sharing services (`systemsetup`).
+21. `rdp_sessions` — Screen Sharing & VNC port 5900 listener status.
+22. `rdp_settings` — Remote Login (OpenSSH) configuration (`systemsetup -getremotelogin`).
+23. `secure_boot` — Apple Silicon Secure Boot policy and kernel boot arguments (`nvram`).
+24. `sysmon` — LaunchAgents persistence plists in `/Library/LaunchAgents` and `~/Library/LaunchAgents`.
+25. `uac_policies` — Root account direct authentication and sudoers policy.
+26. `powershell_history` — Shell command history (`~/.zsh_history`, `~/.bash_history`) credential exposure.
 
 ---
 
 ## 6. Network-Level Reconnaissance Modules (10 Categories)
 
-Located in `python/core/network_scanner/`:
-
-| Module | Category | Capabilities |
-|---|---|---|
-| `interfaces.py` | Interface Connectors | Physical and virtual adapters, MAC addresses, IPv4 prefix, unassigned active interfaces |
-| `arp_table.py` | ARP Table & Neighbors | Mapped IP-to-MAC associations, duplicate MAC detection (**ARP spoofing / MITM detection**) |
-| `dns_cache.py` | DNS Client Cache | Cached DNS resolutions, detection of suspicious top-level domains (.top, .xyz, .buzz) and C2 lookups |
-| `network_profiles.py` | Windows Network Profiles | Classification of connected networks (DomainAuthenticated, Private, Public) |
-| `network_shares.py` | Exposed Network Shares | Audits exposed SMB shares (`net share`, `Get-SmbShare`), administrative exports (C$, ADMIN$) |
-| `connections.py` | Active Sockets & Processes | Maps TCP/UDP sockets to owning process names and PIDs, flags `0.0.0.0` listening services |
-| `rpc_endpoints.py` | RPC Endpoints Mapped | TCP port 135 MSRPC Endpoint Mapper audit, interface UUID enumeration (SAMR, LSARPC, Task Scheduler) |
-| `open_ports.py` | Rapid Port Scanner | Audits common management and legacy ports (21 FTP, 23 Telnet, 80 HTTP, 135 RPC, 445 SMB, 3389 RDP) |
-| `lldp_cdp.py` | LLDP / CDP Discovery | Discovers neighboring managed switches and router infrastructure via LLDP/CDP |
-| `vlan_devices.py` | VLAN Vectors Discovery | Sweeps local subnet/VLAN to identify responsive live nodes and lateral attack surfaces |
-| `diagram_generator.py` | Topology Graph Generator | Formulates node-link graph data and renders standalone SVG network diagrams |
+1. `interfaces` — Network interface connectors (`en0`, `lo0`, `utun`), IP addresses, MAC addresses.
+2. `arp_table` — Local subnet ARP neighbor table with MAC spoofing detection (`arp -a`).
+3. `dns_cache` — DNS resolvers and configuration (`scutil --dns`, `/etc/resolv.conf`).
+4. `network_profiles` — Active network locations & services (`networksetup -listallnetworkservices`, Wi-Fi SSID).
+5. `network_shares` — Mounted and exported SMB/NFS/AFP file systems (`mount`, `sharing -l`).
+6. `connections` — Active established TCP/UDP sockets via `lsof -iTCP -sTCP:ESTABLISHED -n -P`.
+7. `rpc_endpoints` — Bonjour / mDNS network service advertisements (UDP port 5353).
+8. `open_ports` — Listening TCP ports and owning processes (`lsof -iTCP -sTCP:LISTEN -n -P`).
+9. `lldp_cdp` — Link layer and default gateway discovery via ARP cache probing.
+10. `vlan_devices` — Local broadcast domain & subnet devices scan.
+11. `diagram_generator` — Generates interactive SVG network topology diagram.
 
 ---
 
-## 7. Vulnerability Engine & Exploit Crawler
+## 7. Vulnerability Engine & Exploit Intelligence
 
-Located in `python/core/vuln_engine/`:
-
-- **CVE Database (`cve_database.py`)**: Loads `python/data/cve_snapshot.json` offline with support for live NIST NVD REST API v2.0 enrichment. Correlates OS build numbers, services, and .NET versions with critical Windows vulnerabilities (such as **MadLicense `CVE-2024-38077`**, **Wi-Fi Driver RCE `CVE-2024-30078`**, **PrintNightmare `CVE-2021-34527`**, **Follina `CVE-2022-30190`**, and **BlueKeep `CVE-2019-0708`**).
-- **CIS Benchmark Evaluator (`cis_benchmarks.py`)**: Assesses host settings against pre-encoded Center for Internet Security rules (`python/data/cis_windows_benchmarks.json`), reporting compliance percentages, expected values, and Group Policy fix instructions.
-- **Open-Source Exploit Crawler (`exploit_crawler.py`)**: Searches Exploit-DB indexes and the GitHub Security Advisory database to identify public Proof-of-Concepts (PoCs) and Metasploit modules matching detected CVEs.
-- **Patch Checker (`patch_checker.py`)**: Verifies installed Microsoft KBs against required hotfixes, displaying installation status and direct Microsoft Update Catalog download links.
-- **Severity Scorer (`severity_scorer.py`)**: Implements CVSS v3.1 scoring formulas and calculates an aggregate **System Security Posture Rating (0–100)** and letter grade (A through F).
+- **CIS Apple macOS Benchmark:** Evaluates 13 critical security controls covering FileVault, SIP, Gatekeeper, Application Firewall, SSH, Screen Sharing, Remote Apple Events, Guest Account, Root Account, and Secure Boot.
+- **macOS CVE Snapshot:** Curated offline Apple security vulnerabilities including BLASTPASS (CVE-2023-41064), Operation Triangulation (CVE-2023-38606), WebKit RCE (CVE-2023-42917), and SIP Bypass (CVE-2024-27842).
+- **CVSS v3.1 Mathematical Scorer:** Calculates total score (0 to 100), letter grade (A to F), and posture status based on finding severity penalties.
 
 ---
 
 ## 8. Consolidated Reporting Subsystem (HTML & PDF)
 
-Located in `python/report/`:
-
-- **HTML Report Generator (`html_generator.py`)**: Compiles self-contained executive HTML reports featuring embedded CSS, executive summary statistics, detailed findings by category, and an embedded SVG network diagram.
-- **PDF Report Generator (`pdf_generator.py`)**: Converts HTML reports into publication-quality PDFs via WeasyPrint or headless Chromium/Edge (`--headless --print-to-pdf`).
-- **CLI Trigger**: Run `python main.py --scan-type report --report-format html` or export directly from the UI.
+AgentZero features an export engine producing executive reports:
+- Standalone HTML report with responsive styling and embedded SVG network diagrams.
+- Print-ready PDF report rendering executive summary, severity donut chart, and prioritized remediation tables.
 
 ---
 
 ## 9. Complete Tech Stack Breakdown
 
-| Layer | Technologies Used | Purpose |
-|---|---|---|
-| **Frontend Framework** | React 18, Vite | High-performance single page application |
-| **Styling & Icons** | Tailwind CSS, Lucide React | Cybersecurity-themed responsive UI |
-| **Data Visualizations** | Recharts, Custom SVG Canvas | CVSS Donut charts, interactive Network Topology Graph |
-| **Desktop Shell** | Electron 28+ | Multi-platform desktop wrapper, native window management |
-| **IPC Bridge** | Node.js `child_process.spawn()`, `contextBridge` | Secure, asynchronous streaming IPC |
-| **Backend Engine** | Python 3.10+ / 3.11+ | System audits, network reconnaissance, CVE analysis |
-| **OS Interfaces** | WMI, Windows Registry (`winreg`), PowerShell | Deep Windows subsystem telemetry extraction |
-| **Network Probing** | `psutil`, `socket`, `scapy`, `subprocess` | Port scanning, ARP parsing, socket-to-PID mapping |
-| **Reporting** | Jinja2, HTML5/CSS3, WeasyPrint | Consolidated HTML and PDF report generation |
-| **Packaging** | PyInstaller, electron-builder | Single `.exe` packaging with administrative UAC manifest |
+- **Desktop Shell:** Electron 28 (Chromium 120 + Node.js 18)
+- **Frontend:** React 18, Vite 5, Tailwind CSS 3, Lucide React, Recharts
+- **Scanning Engine:** Python 3.9+ with standard library (`subprocess`, `platform`, `json`, `os`, `re`)
+- **Packaging:** electron-builder 24 with native Apple Silicon (`arm64`) target and APFS DMG layout
 
 ---
 
 ## 10. Local Development & Execution Guide
 
-### Prerequisites
-- Node.js 18+ / 20+ LTS
-- Python 3.10+ / 3.11+
-- Git
-
-### 1. Install Dependencies
 ```bash
-# Install frontend packages
+# Install dependencies
 npm install
 
-# Setup Python virtual environment
-cd python
-python3 -m venv venv
-
-# Activate venv:
-# On Windows: venv\Scripts\activate
-# On macOS/Linux: source venv/bin/activate
-
-pip install -r requirements.txt
-cd ..
-```
-
-### 2. Run in Development
-```bash
-# Option A: Run desktop application with live Electron IPC:
+# Start Electron desktop development window
 npm run dev:electron
 
-# Option B: Run web UI preview in browser:
-npm run dev
+# Or execute scans via CLI
+python3 python/main.py --scan-type full --output-format json
 ```
 
-### 3. Run Python CLI Directly
+---
+
+## 11. Native macOS Desktop Packaging (.dmg)
+
 ```bash
-cd python
-python3 main.py --scan-type full
-python3 main.py --scan-type report --report-format html
+npm run build:mac
 ```
 
----
-
-## 11. Standalone Windows Packaging Guide
-
-To package the tool into a completely standalone application that runs without requiring Node.js or Python to be installed on target machines:
-
-### On a Windows Machine:
-
-#### One-Click Build:
-Run the automated script:
-```cmd
-scripts\build-all.bat
-```
-
-#### Manual Build:
-```cmd
-# 1. Compile Python backend into standalone scanner.exe:
-npm run build:python
-
-# 2. Package React + Electron into Windows installers:
-npm run build:electron
-```
-
-### Generated Binaries:
-- **`release/AgentZero Setup 1.0.0.exe`**: Full NSIS installer with administrative UAC elevation.
-- **`release/AgentZero 1.0.0.exe`**: **Portable Standalone Executable** (runs on-demand from USB or network shares).
-- **`python/dist/scanner.exe`**: Standalone CLI scanner engine.
-
----
-
-## 12. Cloud Deployment on Vercel
-
-The React frontend of AgentZero can be deployed directly to Vercel as a live interactive demonstration. In cloud mode (where native Electron IPC is not present), AgentZero automatically operates in **Cloud Simulation Mode**, allowing users to explore the live dashboard, trigger simulated scans, view interactive network topology diagrams, and inspect real Windows 11 Enterprise CVE findings.
-
-### Steps to Deploy on Vercel:
-
-#### Method 1: Deploy via Vercel Web Dashboard (Recommended)
-1. Push your repository to GitHub: `https://github.com/AYUSH-KAVYA/agentZero.git`.
-2. Go to [https://vercel.com](https://vercel.com) and log in.
-3. Click **"Add New Project"** and import the `agentZero` repository.
-4. Vercel automatically reads [`vercel.json`](file:///Users/ayush___ks/Downloads/agentZero/vercel.json):
-   - **Framework Preset**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-5. Click **"Deploy"**. Your live cloud dashboard will be accessible in under 1 minute.
-
-#### Method 2: Deploy via Vercel CLI
-```bash
-# Install Vercel CLI globally
-npm i -g vercel
-
-# Deploy from repository root
-vercel
-```
-
----
-
-*Authored for the National Technical Research Organisation (NTRO) • AgentZero Security Audit Team*
+Generates:
+- `release/AgentZero-1.0.0-arm64.dmg` (96 MB DMG installer with drag-to-Applications layout)
+- `release/mac-arm64/AgentZero.app` (Standalone application bundle)
+- `release/AgentZero-1.0.0-arm64-mac.zip` (Distribution archive)

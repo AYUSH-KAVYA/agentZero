@@ -16,7 +16,7 @@ function createWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    title: 'AgentZero — Vulnerability Scanner',
+    title: 'AgentZero — macOS Vulnerability Scanner',
     icon: path.join(__dirname, '..', 'assets', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

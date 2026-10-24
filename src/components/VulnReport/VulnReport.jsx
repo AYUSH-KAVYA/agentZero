@@ -69,7 +69,7 @@ export default function VulnReport() {
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">Vulnerability & Exploit Intelligence</h2>
           <p className="text-xs text-gray-400 mt-1">
-            Correlates system state with known Windows CVEs, open-source weaponized exploits, and CIS Benchmarks
+            Correlates system state with known macOS CVEs, open-source weaponized exploits, and CIS Apple macOS Benchmarks
           </p>
         </div>
 
@@ -101,13 +101,13 @@ export default function VulnReport() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-cyber-border pb-3">
+      <div className="flex items-center gap-2 border-b border-white/10 pb-3">
         <button
           onClick={() => setActiveTab('cves')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
             activeTab === 'cves'
-              ? 'bg-cyber-accent text-cyber-dark font-bold'
-              : 'bg-cyber-card text-gray-400 hover:text-white border border-cyber-border'
+              ? 'bg-sky-500/20 text-sky-300 border border-sky-400/30 shadow-sm'
+              : 'bg-slate-900/60 text-slate-400 hover:text-white border border-white/5'
           }`}
         >
           <Bug className="w-3.5 h-3.5" />
@@ -116,10 +116,10 @@ export default function VulnReport() {
 
         <button
           onClick={() => setActiveTab('cis')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
             activeTab === 'cis'
-              ? 'bg-cyber-accent text-cyber-dark font-bold'
-              : 'bg-cyber-card text-gray-400 hover:text-white border border-cyber-border'
+              ? 'bg-sky-500/20 text-sky-300 border border-sky-400/30 shadow-sm'
+              : 'bg-slate-900/60 text-slate-400 hover:text-white border border-white/5'
           }`}
         >
           <ShieldAlert className="w-3.5 h-3.5" />
@@ -263,7 +263,7 @@ export default function VulnReport() {
         <div className="cyber-card p-5">
           <div className="flex items-center justify-between mb-4 border-b border-cyber-border pb-3">
             <div>
-              <h3 className="text-sm font-semibold text-white">CIS Microsoft Windows Benchmark</h3>
+              <h3 className="text-sm font-semibold text-white">CIS Apple macOS Benchmark</h3>
               <p className="text-xs text-gray-400">
                 Compliance score:{' '}
                 <span className="font-bold text-cyber-accent">
